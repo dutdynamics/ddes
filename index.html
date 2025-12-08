@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DUT Dynamics Seminar</title>
+    
+    <!-- MathJax Configuration -->
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']]
+            }
+        };
+    </script>
+    
+    <!-- Load MathJax from CDN -->
+    <script id="MathJax-script" async src="https://cdn.bootcdn.net/ajax/libs/mathjax/4.0.0/tex-mml-chtml.js"></script>
+    
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+            max-width: 1000px; 
+            margin: 0 auto; 
+            padding: 30px; 
+            line-height: 1.6;
+            color: #333;
+            background: #f5f7fa;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 40px 0 20px 0;
+            padding-bottom: 10px;
+            border-bottom: 3px solid;
+        }
+        .section-header h2 {
+            margin: 0;
+            font-size: 1.8em;
+        }
+        .section-icon {
+            font-size: 1.5em;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        
+        .upcoming-section .section-header {
+            border-color: #27ae60;
+            color: #27ae60;
+        }
+        .upcoming-section .section-icon {
+            background: #e8f5e8;
+            color: #27ae60;
+        }
+        
+        .past-section .section-header {
+            border-color: #7f8c8d;
+            color: #7f8c8d;
+        }
+        .past-section .section-icon {
+            background: #ecf0f1;
+            color: #7f8c8d;
+        }
+        
+        .seminar { 
+            background: white;
+            border-left: 4px solid;
+            padding: 25px;
+            margin: 20px 0;
+            border-radius: 12px;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .seminar:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.12);
+        }
+        
+        .upcoming-seminar {
+            border-left-color: #27ae60;
+        }
+        .past-seminar {
+            border-left-color: #7f8c8d;
+            opacity: 0.9;
+        }
+        
+        .seminar-title {
+            color: #2c3e50;
+            margin-top: 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f8f9fa;
+        }
+        
+        .meta-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .meta-item strong {
+            min-width: 80px;
+            color: #555;
+            font-weight: 600;
+        }
+        .meta-item span {
+            color: #2c3e50;
+            font-weight: 500;
+        }
+        
+        .description {
+            padding: 20px 0;
+        }
+        
+        .math-example {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        .math-example p {
+            margin: 8px 0;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-left: 15px;
+        }
+        .upcoming-badge {
+            background: #27ae60;
+            color: white;
+        }
+        .past-badge {
+            background: #7f8c8d;
+            color: white;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #7f8c8d;
+            background: white;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+        .empty-state p {
+            font-size: 1.1em;
+            margin: 10px 0;
+        }
+        
+        @media (max-width: 768px) {
+            .meta-info {
+                grid-template-columns: 1fr;
+            }
+            .section-header {
+                flex-direction: column;
+                text-align: center;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>DUT Dynamics Seminar</h1>
+        <p>Fall 2025 • Weekly Seminars</p>
+    </div>
+    
+    <!-- UPCOMING EVENTS SECTION -->
+			
+    <div class="upcoming-section">
+        <div class="section-header">
+            <span class="section-icon">📅</span>
+            <h2>Upcoming Events</h2>
+        </div>
+
+		
+
+
+	<div class="seminar upcoming-seminar">
+          <h2 class="seminar-title">
+            Orbital stability of propagated waves in parabolic systems (Part I)
+			  <span class="status-badge upcoming-badge">Upcoming</span>
+          </h2>            
+          <div class="meta-info">
+	    <div class="meta-item">
+              <strong>报告人:</strong>
+              <span>Louis Garénaux (Karlsruhe Institute of Technology) </span>
+            </div>
+            <div class="meta-item">
+	      <strong>日期:</strong>
+              <span>2025年12月2日</span>
+            </div>
+            <div class="meta-item">
+              <strong>时间:</strong>
+              <span>10:00 AM - 11:30 AM</span>
+            </div>
+            <div class="meta-item">
+              <strong>地点:</strong>
+              <span>数学科学学院114</span>
+            </div>
+          </div>	  
+	  <div class="description">
+            <p>
+	      In these two lectures, we will discuss a class of partial differential 
+equations that models a large range of biological and physical 
+phenomena. Some of their solutions are given as a fixed profile 
+traveling with constant speed.
+We will discuss the long time stability of these specific solutions. Due 
+to translational invariance, the linearized dynamics spectrum touches 
+the imaginary axis. As a consequence, it is necessary to distinguish 
+between shape and phase dynamics. I will present the different tools and 
+approaches that where developed in the past fifty years to separate and 
+control these different dynamics. If time allows, we will discuss 
+possible extensions of these tools to open problems.
+	    </p>
+          </div>
+	</div>	
+
+	<div class="seminar upcoming-seminar">
+          <h2 class="seminar-title">
+            Orbital stability of propagated waves in parabolic systems (Part II)
+          </h2>            
+          <div class="meta-info">
+	    <div class="meta-item">
+              <strong>报告人:</strong>
+              <span>Louis Garénaux (Karlsruhe Institute of Technology) </span>
+            </div>
+            <div class="meta-item">
+	      <strong>日期:</strong>
+              <span>2025年12月9日</span>
+            </div>
+            <div class="meta-item">
+              <strong>时间:</strong>
+              <span>10:00 AM - 11:30 AM</span>
+            </div>
+            <div class="meta-item">
+              <strong>地点:</strong>
+              <span>数学科学学院114</span>
+            </div>
+          </div>	  
+	  <div class="description">
+            <p>
+	      In these two lectures, we will discuss a class of partial differential 
+equations that models a large range of biological and physical 
+phenomena. Some of their solutions are given as a fixed profile 
+traveling with constant speed.
+We will discuss the long time stability of these specific solutions. Due 
+to translational invariance, the linearized dynamics spectrum touches 
+the imaginary axis. As a consequence, it is necessary to distinguish 
+between shape and phase dynamics. I will present the different tools and 
+approaches that where developed in the past fifty years to separate and 
+control these different dynamics. If time allows, we will discuss 
+possible extensions of these tools to open problems.
+	    </p>
+          </div>
+	</div>	
+
+	<div class="seminar upcoming-seminar">
+          <h2 class="seminar-title">
+            TBA
+          </h2>            
+          <div class="meta-info">
+	    <div class="meta-item">
+              <strong>报告人:</strong>
+              <span>Robert Wegner (Karlsruhe Institute of Technology) </span>
+            </div>
+            <div class="meta-item">
+	      <strong>日期:</strong>
+              <span>2025年12月16日</span>
+            </div>
+            <div class="meta-item">
+              <strong>时间:</strong>
+              <span>10:00 AM - 11:30 AM</span>
+            </div>
+            <div class="meta-item">
+              <strong>地点:</strong>
+              <span>数学科学学院114</span>
+            </div>
+          </div>	  
+	  <div class="description">
+            <p>
+	      TBA
+	    </p>
+          </div>
+	</div>	
+
+	<div class="seminar upcoming-seminar">
+          <h2 class="seminar-title">
+            TBA
+          </h2>            
+          <div class="meta-info">
+	    <div class="meta-item">
+              <strong>报告人:</strong>
+              <span>Robert Wegner (Karlsruhe Institute of Technology) </span>
+            </div>
+            <div class="meta-item">
+	      <strong>日期:</strong>
+              <span>2025年12月23日</span>
+            </div>
+            <div class="meta-item">
+              <strong>时间:</strong>
+              <span>10:00 AM - 11:30 AM</span>
+            </div>
+            <div class="meta-item">
+              <strong>地点:</strong>
+              <span>数学科学学院114</span>
+            </div>
+          </div>	  
+	  <div class="description">
+            <p>
+	      TBA
+	    </p>
+          </div>
+	</div>	
+
+
+		
+</div>	
+    
+    
+    <!-- PAST EVENTS SECTION -->
+
+	
+    <div class="past-section">
+        <div class="section-header">
+            <span class="section-icon">📚</span>
+            <h2>Past Events</h2>
+        </div>
+
+
+		<div class="seminar past-seminar">
+          <h2 class="seminar-title">
+            A geometric formulation of GENERIC stochastic differential equations
+          </h2>            
+          <div class="meta-info">
+	    <div class="meta-item">
+              <strong>报告人:</strong>
+              <span>程梦雨(数学科学学院) </span>
+            </div>
+            <div class="meta-item">
+	      <strong>日期:</strong>
+              <span>2025年11月25日</span>
+            </div>
+            <div class="meta-item">
+              <strong>时间:</strong>
+              <span>10:00 AM - 11:30 AM</span>
+            </div>
+            <div class="meta-item">
+              <strong>地点:</strong>
+              <span>数学科学学院114</span>
+            </div>
+          </div>	  
+	  <div class="description">
+            <p>
+	      This talk will present a geometric formulation of GENERIC stochastic
+differential equations, based on the recent work [Peletier and Seri,
+arXiv:2509.09566v2]. They propose a coordinate-invariant geometric formulation
+of the GENERIC stochastic differential equation, unifying reversible Hamiltonian
+and irreversible dissipative dynamics within a differential-geometric
+framework. Their construction builds on the classical GENERIC or metriplectic
+formalism, extending it to manifolds by introducing a degenerate Poisson
+structure, a degenerate co-metric, and a volume form satisfying a unimodularity
+condition. The resulting equation preserves a particular Boltzmann-type measure,
+ensures almost-sure conservation of energy, and reduces to the deterministic
+GENERIC/metriplectic formulation in the zero-noise limit. This geometrization
+separates system-specific quantities from the ambient space, clarifies the roles
+of the underlying structures, and provides a foundation for analytic and
+numerical methods, as well as future extensions to quantum and coarse-grained
+systems.
+	    </p>
+          </div>
+	</div>
+
+	<div class="seminar past-seminar">
+          <h2 class="seminar-title">
+            Ergodicity of partially hyperbolic dynamics
+          </h2>            
+          <div class="meta-info">
+	    <div class="meta-item">
+              <strong>报告人:</strong>
+              <span>封子强(北京大学) </span>
+            </div>
+            <div class="meta-item">
+	      <strong>日期:</strong>
+              <span>2025年11月18日</span>
+            </div>
+            <div class="meta-item">
+              <strong>时间:</strong>
+              <span>10:00 AM - 11:30 AM</span>
+            </div>
+            <div class="meta-item">
+              <strong>地点:</strong>
+              <span>数学科学学院224</span>
+            </div>
+          </div>	  
+	  <div class="description">
+            <p>
+	      Ergodicity, originally introduced by Boltzmann in 19th century as a
+hypothesis in thermodynamics, has been extensively studied as a powerful
+framework for formulating the equidistribution of typical orbits in dynamical
+systems. Using the argument introduced by Hopf, the so-called "Hopf argument",
+and developed by Anosov and Sinai, it is well-known that all $C^2$
+volume-preserving uniformly hyperbolic systems are ergodic. The famous Stable
+Ergodicity Conjecture proposed by Pugh-Shub 30-years ago asserts the prevalence
+of ergodicity among volume-preserving partially hyperbolic systems. I will
+present our results jointly with Raul Ures on characterizing this prevalence,
+giving advances to the Hertz-Hertz-Ures Ergodicity Conjecture.
+	    </p>
+          </div>
+	</div>	
+		
+	<div class="seminar past-seminar">
+          <h2 class="seminar-title">
+            Introduction to Aubry-Mather Theory
+          </h2>            
+          <div class="meta-info">
+	    <div class="meta-item">
+              <strong>报告人:</strong>
+              <span>张雷(数学科学学院) </span>
+            </div>
+            <div class="meta-item">
+	      <strong>日期:</strong>
+              <span>2025年11月11日</span>
+            </div>
+            <div class="meta-item">
+              <strong>时间:</strong>
+              <span>10:00 AM - 11:30 AM</span>
+            </div>
+            <div class="meta-item">
+              <strong>地点:</strong>
+              <span>数学科学学院224</span>
+            </div>
+          </div>	  
+	  <div class="description">
+            <p>
+	      The Kolmogorov-Arnold-Moser (KAM) theory provides a powerful framework for
+understanding the persistence of quasi-periodic motion in nearly-integrable
+Hamiltonian systems. However, it requires strong conditions, including high
+differentiability, proximity to integrability, and Diophantine frequencies. This
+talk will explore the alternative offered by Aubry-Mather theory via variational
+method. Aubry-Mather theory originated from the independent research in
+differential geometry, dynamical systems, and solid state physics. We will
+contextualize the theory with examples from these fields and explain its
+fundamental existence theorem, which establishes the presence of quasi-periodic
+invariant sets for every rotation number under minimal hypotheses.
+	    </p>
+          </div>
+	</div>
+		
+	<div class="seminar past-seminar">
+          <h2 class="seminar-title">
+            Ergodic Theory on Horseshoes
+          </h2>            
+          <div class="meta-info">
+	    <div class="meta-item">
+              <strong>报告人:</strong>
+              <span>侯晓博(数学科学学院) </span>
+            </div>
+            <div class="meta-item">
+	      <strong>日期:</strong>
+              <span>2025年11月4日</span>
+            </div>
+            <div class="meta-item">
+              <strong>时间:</strong>
+              <span>10:00 AM - 11:30 AM</span>
+            </div>
+            <div class="meta-item">
+              <strong>地点:</strong>
+              <span>数学科学学院114</span>
+            </div>
+          </div>	  
+	  <div class="description">
+            <p>
+	      Abstract: This talk focuses on ergodic theory on horseshoes. It will begin by
+introducing the horseshoe map, a classic example in differentiable dynamical
+systems, and establish its relationship with symbolic systems. Then, fundamental
+concepts in ergodic theory, such as invariant measures, ergodic measures, and
+entropy, will be discussed. Finally, we will investigate the intermediate value
+properties and multifractal analysis on horseshoes.
+	    </p>
+          </div>
+	</div>		
+
+		<div class="seminar past-seminar">
+            <h2 class="seminar-title">
+                Wasserstein convergence rates in the invariance principle for
+                deterministic dynamical systems (Part II)
+            </h2>
+            
+            <div class="meta-info">
+	      <div class="meta-item">
+                <strong>报告人:</strong>
+                <span>王哲(数学科学学院) </span>
+              </div>
+              <div class="meta-item">
+		<strong>日期:</strong>
+                <span>2025年10月28日</span>
+              </div>
+              <div class="meta-item">
+                <strong>时间:</strong>
+                <span>10:00 AM - 11:30 AM</span>
+              </div>
+              <div class="meta-item">
+                <strong>地点:</strong>
+                <span>数学科学学院224</span>
+              </div>
+            </div>
+
+	    <div class="description">
+              <p>It is well known that deterministic dynamical systems can
+              exhibit some stistical properties if the system is chaotic enough
+              and the observable satisfies some regularity conditions.  This
+              two-part talk  will present recent results on the weak invariance
+              principle for non-uniformly hyperbolic systems, along with
+              convergence rates in the Wasserstein distance. The first talk will
+              introduce the Wasserstein distance and its fundamental
+              properties. The second talk will then present the main results
+              concerning the weak invariance principle and the convergence rates
+              in this metric.
+	      </p>
+            </div>
+	</div>
+
+        <div class="seminar past-seminar">
+            <h2 class="seminar-title">
+                Wasserstein convergence rates in the invariance principle for
+                deterministic dynamical systems (Part I)
+            </h2>
+            
+            <div class="meta-info">
+	      <div class="meta-item">
+                <strong>报告人:</strong>
+                <span>王哲(数学科学学院) </span>
+              </div>
+              <div class="meta-item">
+		<strong>日期:</strong>
+                <span>2025年10月21日</span>
+              </div>
+              <div class="meta-item">
+                <strong>时间:</strong>
+                <span>10:00 AM - 11:30 AM</span>
+              </div>
+              <div class="meta-item">
+                <strong>地点:</strong>
+                <span>数学科学学院224</span>
+              </div>
+            </div>
+
+	    <div class="description">
+              <p>It is well known that deterministic dynamical systems can
+              exhibit some stistical properties if the system is chaotic enough
+              and the observable satisfies some regularity conditions.  This
+              two-part talk  will present recent results on the weak invariance
+              principle for non-uniformly hyperbolic systems, along with
+              convergence rates in the Wasserstein distance. The first talk will
+              introduce the Wasserstein distance and its fundamental
+              properties. The second talk will then present the main results
+              concerning the weak invariance principle and the convergence rates
+              in this metric.
+	      </p>
+            </div>
+	</div>
+		
+		<div class="seminar past-seminar">
+            <h2 class="seminar-title">
+				弹球系统基础
+            </h2>
+            
+            <div class="meta-info">
+	      <div class="meta-item">
+                <strong>报告人:</strong>
+                <span>刘相(University of Padova) </span>
+              </div>
+              <div class="meta-item">
+		<strong>日期:</strong>
+                <span>2025年10月14日</span>
+              </div>
+              <div class="meta-item">
+                <strong>时间:</strong>
+                <span>10:00 AM - 11:30 AM</span>
+              </div>
+              <div class="meta-item">
+                <strong>地点:</strong>
+                <span>数学科学学院224</span>
+              </div>
+            </div>
+
+	    <div class="description">
+              <p>简要介绍弹球系统 (主要介绍Birkhoff billiards以及symplectic billiards)和扭转映射，并展示圆形和椭圆形弹球桌面中系统的可积性。
+	      </p>
+            </div>
+	</div>
+		
+	       <div class="seminar past-seminar">
+            <h2 class="seminar-title">
+                The Existence of Full-Dimensional KAM Tori for Nonlinear
+		Klein-Gordon Equation from Relativistic to Non-Relativistic Regimes
+            </h2>
+            
+            <div class="meta-info">
+	      <div class="meta-item">
+                <strong>报告人:</strong>
+                <span>李思铭 (数学科学学院) </span>
+              </div>
+              <div class="meta-item">
+		<strong>日期:</strong>
+                <span>2025年9月23日</span>
+              </div>
+              <div class="meta-item">
+                <strong>时间:</strong>
+                <span>10:00 AM - 11:30 AM</span>
+              </div>
+              <div class="meta-item">
+                <strong>地点:</strong>
+                <span>数学科学学院224</span>
+              </div>
+            </div>
+
+	    <div class="description">
+              <p>In this talk, I will introduction to the fundamental theory of
+		Hamiltonian systems, including key concepts such as integrable
+		systems, KAM tori, and KAM theory. Following this, I will explore the
+		almost-periodic solutions of the  one-dimensional nonlinear
+		Klein-Gordon (NLKG) equation under periodic boundary  conditions, with
+		the aim of demonstrating their existence and linear stability in the
+		limit from the relativistic ($𝑐=1$) to the non-relativistic ($𝑐\to\infty$)
+		regime. The research steps are as follows: transform this equation into an infinite-dimensional 
+		Hamiltonian system；define the Hamiltonian norm to quantify the perturbation terms； 
+		construct the KAM iteration to eliminate specific perturbation terms；prove the 
+		convergence of the iteration to establish the existence and linear stability of 
+		full-dimensional KAM tori. The methodological foundation of this study is derived 
+		from the approach outlined in Bourgain. J. Funct. Anal 229(1) 62–94, and it is a collaborative effort with
+		Cong Hongzi and Wu Xiaoqing.</p>
+            </div>
+	    
+	</div>
+
+    </div>
+</body>
+</html>
