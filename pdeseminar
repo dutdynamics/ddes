@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DUT Differential Equations Seminar</title>
+    
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.bootcdn.net/ajax/libs/mathjax/4.0.0/tex-mml-chtml.js"></script>
+    
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+            max-width: 1000px; 
+            margin: 0 auto; 
+            padding: 30px; 
+            line-height: 1.6;
+            color: #333;
+            background: #f5f7fa;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 40px 0 20px 0;
+            padding-bottom: 10px;
+            border-bottom: 3px solid;
+        }
+        .section-header h2 {
+            margin: 0;
+            font-size: 1.8em;
+        }
+        .section-icon {
+            font-size: 1.5em;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        
+        .upcoming-section .section-header {
+            border-color: #27ae60;
+            color: #27ae60;
+        }
+        .upcoming-section .section-icon {
+            background: #e8f5e8;
+            color: #27ae60;
+        }
+        
+        .past-section .section-header {
+            border-color: #7f8c8d;
+            color: #7f8c8d;
+        }
+        .past-section .section-icon {
+            background: #ecf0f1;
+            color: #7f8c8d;
+        }
+        
+        .seminar { 
+            background: white;
+            border-left: 4px solid;
+            padding: 25px;
+            margin: 20px 0;
+            border-radius: 12px;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .seminar:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.12);
+        }
+        
+        .upcoming-seminar {
+            border-left-color: #27ae60;
+        }
+        .past-seminar {
+            border-left-color: #7f8c8d;
+            opacity: 0.9;
+        }
+        
+        .seminar-title {
+            color: #2c3e50;
+            margin-top: 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f8f9fa;
+        }
+        
+        .meta-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .meta-item strong {
+            min-width: 80px;
+            color: #555;
+            font-weight: 600;
+        }
+        .meta-item span {
+            color: #2c3e50;
+            font-weight: 500;
+        }
+
+		.meta-info .meta-item:first-child {
+		grid-column: 1 / -1;
+		margin-bottom: 5px;
+		}
+		
+        .description {
+            padding: 20px 0;
+        }
+        
+        .math-example {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        .math-example p {
+            margin: 8px 0;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-left: 15px;
+        }
+        .upcoming-badge {
+            background: #27ae60;
+            color: white;
+        }
+        .past-badge {
+            background: #7f8c8d;
+            color: white;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #7f8c8d;
+            background: white;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+        .empty-state p {
+            font-size: 1.1em;
+            margin: 10px 0;
+        }
+        
+        @media (max-width: 768px) {
+            .meta-info {
+                grid-template-columns: 1fr;
+            }
+            .section-header {
+                flex-direction: column;
+                text-align: center;
+                gap: 10px;
+            }
+        }
+      .nav-bar {
+          text-align: center;
+          margin: 20px 0;
+      }
+      .nav-bar button {
+          padding: 10px 20px;
+          margin: 0 5px;
+          border: none;
+          background-color: #3498db;
+          color: white;
+          border-radius: 20px; /* 圆角 */
+          cursor: pointer;
+          font-size: 1em;
+          transition: background 0.3s;
+      }
+      .nav-bar button:hover {
+          background-color: #2980b9;
+      }
+
+        /* 页面内容块样式 */
+        .page-content { display: none; }
+        #home { display: block; } /* 默认显示首页 */
+
+        /* 保留你原有的研讨会样式 */
+        .seminar { background: white; border-left: 4px solid #27ae60; padding: 25px; margin: 20px 0; border-radius: 12px; box-shadow: 0 3px 8px rgba(0,0,0,0.08); }
+        .section-header { display: flex; align-items: center; gap: 15px; margin: 40px 0 20px 0; padding-bottom: 10px; border-bottom: 3px solid #27ae60; color: #27ae60; }
+        .seminar-title { color: #2c3e50; margin-top: 0; }
+        .meta-info { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin: 20px 0; background: #f8f9fa; padding: 20px; border-radius: 8px; }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>DUT Differential Equations Seminar (DDES)</h1>
+        <p>Spring 2026 • Weekly Seminars (Thursday, 9am, Room 114) • WeChat Group: DDES Seminar</p>
+    </div>
+
+    <div class="nav-bar">
+        <button onclick="showPage('home')">Home Page</button>
+        <button onclick="showPage('upcoming')">Upcoming Events</button>
+        <button onclick="showPage('past')">Past Events</button>
+        <button onclick="showPage('contact')">Contact US</button>
+    </div>
+
+    <div id="home" class="page-content">
+        <p>
+			The DDES Seminar is a research seminar series focused on differential equations, held at <a href="https://math.dlut.edu.cn/"    target="_blank" rel="noopener">  School of Mathematical Sciences</a>,
+		 <a href="https://dutdice.dlut.edu.cn/en/University/Living_in_Dalian.htm"    target="_blank" rel="noopener"> 	Dalian University of Technology (DUT)</a>.
+			Each seminar talk lasts for 45 minutes, followed by a question session. Afterward, everyone is welcome to chat  with the  speakers.  <br> <br>
+
+			
+			Everyone is warmly welcome to attend the seminar! You are also encouraged to present your own research or invite a guest speaker.
+			To propose a talk, please send the speaker's CV and research statement, along with the proposed title and abstract of the presentation, to any member of the organizing team:  <br>
+			<a href="https://faculty.dlut.edu.cn/chengmengyu/zh_CN/index.htm" target="_blank" rel="noopener">Mengyu Cheng</a> (程梦雨，mycheng(at)dlut.edu.cn),  <br>
+			Dingli Jiang (蒋鼎立， 1191991080(at)qq.com),  <br>
+			<a href="https://faculty.dlut.edu.cn/~M3aUJf/zh_CN/index.htm" target="_blank" rel="noopener">Xian Liao</a> (廖娴， liao(at)dlut.edu.cn). 
+		</p>
+    </div>
+<!-- UPCOMING EVENTS SECTION -->
+    <div id="upcoming" class="page-content">
+      
+      <div class="section-header">
+            <span class="section-icon">📅</span>
+            <h2>Upcoming   Events</h2>
+        </div>
+      
+      
+      
+        <div class="seminar upcoming-seminar">
+			 <h2 class="seminar-title">
+           Weak convergence of a full-discretization to stochastic Allen–Cahn equation driven by multiplicative noise
+          </h2>            
+          <div class="meta-info">
+	    <div class="meta-item">
+              <strong>Speaker:</strong>
+              <span>Minxing Zhang (张敏行，PhD Student @ JLU - Jilin University) </span>
+            </div>
+            <div class="meta-item">
+	      <strong>Date:</strong>
+              <span>Mar 12, 2026</span>
+            </div>
+            <div class="meta-item">
+              <strong>Time:</strong>
+              <span>9am - 9:45am</span>
+            </div>
+            <div class="meta-item">
+              <strong>Place:</strong>
+              <span>Room 114 </span>
+            </div>
+          </div>	  
+	  <div class="description">
+            <p>
+				In this talk, I will present recent work on numerical approximations of the stochastic Allen–Cahn equation driven 
+				by multiplicative trace-class noise. We consider a fully discrete scheme combining a drift-implicit Euler method 
+				in time with a spectral Galerkin approximation in space.  <br>
+
+				The main focus is on weak convergence analysis. I will explain how the spatial weak convergence rate improves upon 
+				the corresponding strong rate—by nearly one order in dimensions $d =1,2$ and by nearly one-half order in dimension
+				$d=3$. For the temporal discretization, we obtain weak convergence rates close to order one in $d=1,2$ and close to
+				$3/4$in $d=3$. <br>
+
+				A key ingredient of the analysis is the derivation of suitable a priori estimates for the Kolmogorov equations 
+				associated with the spectral Galerkin semi-discretization. In addition, I will introduce techniques for handling 
+				operator traces involving stochastic integrals in the temporal weak error analysis. 
+
+	    </p>
+          </div>
+	</div>	
+      
+      
+      
+      
+      
+    </div>
+<!-- PAST EVENTS SECTION --> 
+    <div id="past" class="page-content">
+        <div class="section-header">
+            <span class="section-icon">📚</span>
+            <h2>Past Events</h2>
+        </div>
+      
+        
+      
+      <div class="description">
+        <h2> Fall Semester 2025-2026 </h2> 
+    </div>
+		
+
+		<div class="seminar past-seminar">
+			 <h2 class="seminar-title">
+           Random attractors for SDEs
+          </h2>            
+          <div class="meta-info">
+	    <div class="meta-item">
+              <strong>Speaker:</strong>
+              <span>Mengyu Cheng (程梦雨, Associate Prof @ DUT-Dalian University of Technology) </span>
+            </div>
+            <div class="meta-item">
+	      <strong>Date:</strong>
+              <span>Sep 18, 2025</span>
+            </div>
+            <div class="meta-item">
+              <strong>Time:</strong>
+              <span>9am - 10am</span>
+            </div>
+            <div class="meta-item">
+              <strong>Place:</strong>
+              <span>Room 114 </span>
+            </div>
+          </div>	  
+	  <div class="description">
+            <p>
+The attractor is an important concept in dynamical systems, which can be used to characterize the long time asymptotic behavior of systems. 
+In this talk, we will discuss random attractors for McKean-Vlasov stochastic differential equations (in short, MVSDEs). 
+A difficulty arises from the distribution dependence in MVSDEs, which breaks the flow property of solutions. 
+To address this, we consider the random attractor on product space $H\times \mathcal{P}(H)$, 
+where $H$ is a separable Hilbert space and $\mathcal{P}(H)$ denotes the space of probability measures on $H$. 
+This is based on a joint work with Xianjin Cheng and Zhenxin Liu.
+
+	    </p>
+          </div>
+	</div>	
+		 
+ 
+	 
+ 
+
+	 
+ 
+   
+<div class="seminar past-seminar">
+			 <h2 class="seminar-title">
+       Global Well-Posedness and Singularity Analysis for Solutions of Compressible Fluids
+          </h2>            
+          <div class="meta-info">
+	    <div class="meta-item">
+              <strong>Speaker:</strong>
+              <span>Jie Fan (樊洁, PostDoc @ AMSS, CAS - Chinese Academy of Sciences) </span>
+            </div>
+            <div class="meta-item">
+	      <strong>Date:</strong>
+              <span>Sep 25, 2025</span>
+            </div>
+            <div class="meta-item">
+              <strong>Time:</strong>
+              <span>9am - 10am</span>
+            </div>
+            <div class="meta-item">
+              <strong>Place:</strong>
+              <span>Room 114 </span>
+            </div>
+          </div>	  
+	  <div class="description">
+            <p>
+              This talk primarily presents singularity criteria for solutions to the compressible
+              Navier-Stokes equations. It further extends a previously proven conjecture of Nash. Another
+              part establishes the global existence of solutions for the MHD equations where the viscosity
+              coefficients depend on the density. In this case, the initial density can be arbitrarily large.
+
+	    </p>
+          </div>
+	</div>	
+
+
+		<div class="seminar past-seminar">
+			 <h2 class="seminar-title">
+       Blow-up suppression for the 3D Patlak-Keller-Segel-Navier-Stokes system via the Couette flow
+          </h2>            
+          <div class="meta-info">
+	    <div class="meta-item">
+              <strong>Speaker:</strong>
+              <span>Lili Wang (王莉莉, PhD Student @ DUT - Dalian University of Technology) </span>
+            </div>
+            <div class="meta-item">
+	      <strong>Date:</strong>
+              <span>Oct 9, 2025</span>
+            </div>
+            <div class="meta-item">
+              <strong>Time:</strong>
+              <span>9am - 10am</span>
+            </div>
+            <div class="meta-item">
+              <strong>Place:</strong>
+              <span>Room 114 </span>
+            </div>
+          </div>	  
+	  <div class="description">
+            <p>
+           As is well-known, the solution of the Patlak-Keller-Segel system in 3D will blow
+              up in finite time regardless of any initial cell mass. In this talk, we are interested in the
+              suppression of blow-up for the 3D Patlak-Keller-Segel-Navier-Stokes system via the stabilizing
+              effect of the moving fluid. We prove that if the Couette flow is sufficiently strong, then the
+              solutions for the system are global in time. This is a joint work with Shikun Cui, Wendong
+              Wang and Juncheng Wei.
+	    </p>
+          </div>
+	</div>	
+
+		<div class="seminar past-seminar">
+			 <h2 class="seminar-title">
+        Stability and instability of Standing Periodic Waves in the Massive Thirring Model
+          </h2>            
+          <div class="meta-info">
+	    <div class="meta-item">
+              <strong>Speaker:</strong>
+              <span>Shikun Cui (崔世坤, PhD Student @ DUT - Dalian University of Technology) </span>
+            </div>
+            <div class="meta-item">
+	      <strong>Date:</strong>
+              <span>Oct 16, 2025</span>
+            </div>
+            <div class="meta-item">
+              <strong>Time:</strong>
+              <span>9am - 10am</span>
+            </div>
+            <div class="meta-item">
+              <strong>Place:</strong>
+              <span>Room 114 </span>
+            </div>
+          </div>	  
+	  <div class="description">
+            <p>
+           In this talk, we study the spectral stability of the standing periodic waves in the massive Thirring
+              model. The Massive Thirring Model is complete integrable, the spectral stability of the standing periodic
+              waves can be studied by using their Lax spectrum. We show analytically that each family of standing periodic
+              waves is distinguished by the location of eight eigenvalues which coincide with the end points of the spectral
+              bands of the Lax spectrum. The standing periodic waves are proven to be spectrally stable if the eight
+              eigenvalues are located either on the imaginary axis or along the diagonals of the complex plane. By
+              computing the Lax spectrum numerically, we show that this stability criterion is satisfied for some standing
+              periodic waves. This is joint work with Prof. Dmitry Pelinovsky.
+	    </p>
+          </div>
+	</div>
+
+
+		<div class="seminar past-seminar">
+			 <h2 class="seminar-title">
+       Threshold dynamics of traveling waves for monostable pseudo-parabolic equation
+          </h2>            
+          <div class="meta-info">
+	    <div class="meta-item">
+              <strong>Speaker:</strong>
+              <span>Yang Cao (曹杨, Prof @ DUT - Dalian University of Technology) </span>
+            </div>
+            <div class="meta-item">
+	      <strong>Date:</strong>
+              <span>Oct 16, 2025</span>
+            </div>
+            <div class="meta-item">
+              <strong>Time:</strong>
+              <span>10am - 11am</span>
+            </div>
+            <div class="meta-item">
+              <strong>Place:</strong>
+              <span>Room 114 </span>
+            </div>
+          </div>	  
+	  <div class="description">
+            <p>
+            This report is about the traveling wave solutions to the pseudo-parabolic equation, 
+              a kind of non-classical diffusion equation characterized by the mixed third-order derivative term. We demonstrate that
+              the ratio of the mixed third-order derivative coefficient to the diffusion coefficient 
+              $\frac{\tau}{D}$ can serve as a bifurcation parameter. 
+              In detail, when $\frac{\tau}{D}\leq1$, the equation possesses monotone traveling waves; 
+              when $\frac{\tau}{D}>1$, traveling
+              waves are not monotonic and oscillate around the steady state $u=1$. 
+              The precise form of the minimal wave speed $c^*(\tau,D)$ is also derived, 
+              exhibiting a monotonic increase with respect to $\tau$ and converging to $2\sqrt{D}$
+              as $\tau$ approaches 0. Numerical simulations confirm and support our theoretical results. They further show that the
+              larger the value of $\tau$ is, the more non-monotonic the traveling waves become. 
+              Our findings regarding oscillating traveling waves predict saturation 
+              overshoot—a behavior that contradicts classical diffusion-like
+              behavior yet is widely observed in unsaturated porous media. 
+              Mathematically, the threshold value of $\frac{\tau}{D}$
+              reveals the essential role of the dynamic capillary effect in the fundamental overshoot mechanism.
+	    </p>
+          </div>
+	</div>
+
+
+				<div class="seminar past-seminar">
+			 <h2 class="seminar-title">
+       A Stochastic Consensus Model for Global Optimization
+          </h2>            
+          <div class="meta-info">
+	    <div class="meta-item">
+              <strong>Speaker:</strong>
+              <span>Junhyeok Byeon (卞俊赫, Associate Prof @ DUT - Dalian University of Technology) </span>
+            </div>
+            <div class="meta-item">
+	      <strong>Date:</strong>
+              <span>Oct 23, 2025</span>
+            </div>
+            <div class="meta-item">
+              <strong>Time:</strong>
+              <span>9am - 10am</span>
+            </div>
+            <div class="meta-item">
+              <strong>Place:</strong>
+              <span>Room 114 </span>
+            </div>
+          </div>	  
+	  <div class="description">
+            <p>
+            We propose a first-order, time-discrete stochastic consensus model for global
+              optimization. The model draws on interaction-based mechanisms to incorporate
+              objective-function information and handles non-convex, non-differentiable, and even
+              discontinuous functions. It is motivated by the Consensus-Based Optimization (CBO)
+              paradigm, which promotes consensus among agents toward a global optimum through simple
+              stochastic dynamics amenable to rigorous mathematical analysis. Despite these promises, the
+              actual behavior of agents in its time-discrete implementation remains largely unknown. We
+              address this issue by the novel observation that the consensus point governs the entire
+              ensemble. We further demonstrate competitive performance across various problems.
+	    </p>
+          </div>
+	</div>
+
+
+		<div class="seminar past-seminar">
+			 <h2 class="seminar-title">
+       Mean Motion Resonant Normal Forms for Crossing Orbits and Close Encounters in the Three-Body Problem
+          </h2>            
+          <div class="meta-info">
+	    <div class="meta-item">
+              <strong>Speaker:</strong>
+              <span>Xiang Liu (刘相,  PhD Student @ UNIPD - University of Padua) </span>
+            </div>
+            <div class="meta-item">
+	      <strong>Date:</strong>
+              <span>Oct 30, 2025</span>
+            </div>
+            <div class="meta-item">
+              <strong>Time:</strong>
+              <span>9am - 10am</span>
+            </div>
+            <div class="meta-item">
+              <strong>Place:</strong>
+              <span>Room 114 </span>
+            </div>
+          </div>	  
+	  <div class="description">
+            <p>
+            Mean motion resonance (MMR), a phenomenon occurring when two celestial
+              bodies have orbital periods in a commensurable ratio, plays a pivotal role in both stabilizing
+              and destabilizing orbital motions within the Solar System. For highly eccentric orbits, the risk
+              of close encounters introduces significant complexity. When such eccentric orbits are trapped
+              in resonance, perturbations can induce chaotic motions, leading to rapid changes in orbital
+              elements and transitions of different dynamical states.
+              In this talk, we will numerically demonstrate the limits of application of canonical
+              perturbation theory, specifically the validity of the normal form approximations, for the study
+              of MMRs of the circular restricted three-body problem in the domain of orbits which cross, or
+              are close to cross, the orbit of the secondary body. The external 1:2 and 5:6 MMRs for values
+              of the mass ratios representing the Sun-Jupiter and Sun-Neptune cases will be used as model
+              examples.
+	    </p>
+          </div>
+	</div>
+
+
+		<div class="seminar past-seminar">
+			 <h2 class="seminar-title">
+      Yang-Mills equations
+          </h2>            
+          <div class="meta-info">
+	    <div class="meta-item">
+              <strong>Speaker:</strong>
+              <span>Samuel Adrian Antz  (PhD Student @ DUT - Dalian University of Technology) </span>
+            </div>
+            <div class="meta-item">
+	      <strong>Date:</strong>
+              <span>Nov 6, 2025</span>
+            </div>
+            <div class="meta-item">
+              <strong>Time:</strong>
+              <span>9am - 10am</span>
+            </div>
+            <div class="meta-item">
+              <strong>Place:</strong>
+              <span>Room 114 </span>
+            </div>
+          </div>	  
+	  <div class="description">
+            <p>
+           Yang-Mills theory is fundamental for both mathematics and theoretical physics. It
+              underlies electrodynamics with the first unitary group U(1) as gauge group or quantum
+              chromodynamics with the third special unitary group SU(3) as gauge group. It has also lead to a
+              deeper understanding of four-dimensional manifolds, for example the Fields Medal winning proof of
+              Donaldson’s theorem. All applications are based on the study of the Yang-Mills equations, which are
+              partial differential equations of second order as well as linear for an abelian gauge group and
+              non-linear for a non-abelian gauge group. Since the formulation of the Yang-Mills equations connects
+              differential forms with Lie algebras, a differential and algebraic perspective are inseparable in
+              Yang-Mills theory.
+	    </p>
+          </div>
+	</div>
+
+<div class="seminar past-seminar">
+			 <h2 class="seminar-title">
+     
+          </h2>            
+          <div class="meta-info">
+	    <div class="meta-item">
+              <strong>Speaker:</strong>
+              <span>Qingxiang Shi  (史庆祥, Associate Prof @ DUT - Dalian University of Technology) </span>
+            </div>
+            <div class="meta-item">
+	      <strong>Date:</strong>
+              <span>Nov 6, 2025</span>
+            </div>
+            <div class="meta-item">
+              <strong>Time:</strong>
+              <span>10am - 11am</span>
+            </div>
+            <div class="meta-item">
+              <strong>Place:</strong>
+              <span>Room 114 </span>
+            </div>
+          </div>	  
+	  <div class="description">
+            <p>
+            In this talk, I will introduce some uniqueness of inverse source scattering and inverse
+              obstacle scattering problems with multi-frequency data. I will also present some direct sampling
+              methods for inverse source scattering problems. With sparse data, these numerical methods can
+              reconstruct the support of source. The stability estimation based on dense data are also provided.
+              Additionally, I will propose some direct sampling methods for the simultaneous reconstruction of
+              both the obstacle shape and the impedance value in the context of inverse acoustic scattering
+              problems, backscattering data are used in this problem.
+	    </p>
+          </div>
+	</div>
+
+
+		<div class="seminar past-seminar">
+			 <h2 class="seminar-title">
+     On the quantitative stability of critical points of the Hardy-Littlewood-Sobolev inequality in $\mathbb{R}^{n}$ with $n\geq3$
+          </h2>            
+          <div class="meta-info">
+	    <div class="meta-item">
+              <strong>Speaker:</strong>
+              <span>Yichen Hu (胡奕辰, Assistant Prof @ DUT - Dalian University of Technology) </span>
+            </div>
+            <div class="meta-item">
+	      <strong>Date:</strong>
+              <span>Nov 13, 2025</span>
+            </div>
+            <div class="meta-item">
+              <strong>Time:</strong>
+              <span>9am - 10am</span>
+            </div>
+            <div class="meta-item">
+              <strong>Place:</strong>
+              <span>Room 114 </span>
+            </div>
+          </div>	  
+	  <div class="description">
+            <p>
+Assume $n\geq3$ and $u\in \dot{H}^1(\mathbb{R}^n)$. Recently, Piccione, Yang and Zhao [JDE, 2025] established a nonlocal version of Struwe's decomposition, 
+i.e., if $\Gamma(u):=\left\|\Delta u+D_{n,\alpha}\int_{\mathbb{R}^{n}}\frac{|u|^{p_{\alpha}}(y)   }{|x-y|^{\alpha}}\mathrm{d}y |u|^{p_{\alpha}-2}u\right\|_{H^{-1}}\rightarrow0$ 
+				and $u\geq 0$, then $dist(u,\mathcal{T})\to 0$, where $dist(u,\mathcal{T})$ denotes the $\dot{H}^1(\mathbb{R}^n)$-distance of $u$ 
+				from the manifold of sums of Talenti bubbles. In this paper, we establish the nonlocal version of the quantitative estimates of Struwe's decomposition in Ciraolo, 
+				Figalli and Maggi [IMRN, 2018] for one bubble and $n\geq3$, Figalli and Glaudo [Arma, 2021] for $3\leq n\leq5$ and Deng, Sun and Wei [Duke, 2025] 
+				for $n\geq6$ and two or more bubbles. We prove that for $n\geq 3$, $\alpha\le n$ and $0\le \alpha\leq 4$,
+              $$
+			dist (u,\mathcal{T})\leq C\begin{cases} \Gamma(u)\left|\log \Gamma(u)\right|^{\frac{1}{2}}\quad&\text{if } \,\, n=6 \,\, \text{and} \,\, \alpha=4,\\
+              \Gamma(u) \quad&\text{for any other cases.}\end{cases}
+			$$
+          Furthermore, we show that this inequality is sharp for $n=6$ and $\alpha=4$.
+	    </p>
+          </div>
+	</div>
+
+			<div class="seminar past-seminar">
+			 <h2 class="seminar-title">
+    Life Span Estimates for Semilinear Heat Equations
+          </h2>            
+          <div class="meta-info">
+	    <div class="meta-item">
+              <strong>Speaker:</strong>
+              <span>Liting You (游丽婷, PhD Student @ SCNU - South China Normal University) </span>
+            </div>
+            <div class="meta-item">
+	      <strong>Date:</strong>
+              <span>Nov 13, 2025</span>
+            </div>
+            <div class="meta-item">
+              <strong>Time:</strong>
+              <span>10am - 11am</span>
+            </div>
+            <div class="meta-item">
+              <strong>Place:</strong>
+              <span>Room 114 </span>
+            </div>
+          </div>	  
+	  <div class="description">
+            <p>
+In this talk, we focus on the life span estimates of solutions to semilinear heat equations with inner and initial sources.
+				We first prove that solutions blow up in finite time when only a single inner source non-rarefied at infinity,
+				and derive the optimal upper and lower bounds on the life span.
+				In recent work, we find only a single source dominates the asymptotic life span in this model with non-trivial non-negataive scaled sources, 
+				and establish sharp asymptotic estimates of life span on blow-up solutions.
+	    </p>
+          </div>
+	</div>
+		
+
+		<div class="seminar past-seminar">
+			 <h2 class="seminar-title">
+Seiberg-Witten equations
+          </h2>            
+          <div class="meta-info">
+	    <div class="meta-item">
+              <strong>Speaker:</strong>
+              <span>Samuel Adrian Antz  (PhD student @ DUT - Dalian University of Technology) </span>
+            </div>
+            <div class="meta-item">
+	      <strong>Date:</strong>
+              <span>Nov 20, 2025</span>
+            </div>
+            <div class="meta-item">
+              <strong>Time:</strong>
+              <span>9am - 10am</span>
+            </div>
+            <div class="meta-item">
+              <strong>Place:</strong>
+              <span>Room 114 </span>
+            </div>
+          </div>	  
+	  <div class="description">
+            <p>
+Seiberg-Witten theory is fundamental for both mathematics and theoretical
+              physics. It was derived from N = 2 supersymmetric Yang-Mills theory and then effectively
+              applied to the study of four-dimensional manifolds. This was a remarkable instance of
+              mathematics gaining from theoretical physics instead of the usual other way around.
+              Seiberg-Witten invariants, based on the Seiberg-Witten equations with the abelian gauge
+              group U(1), also both extended and simplified calculations of Donaldson invariants, based on
+              the Yang-Mills equations with the non-abelian gauge group SU(2), which also concerns the
+              study of four-dimensional manifolds. This was another remarkable aspect since an abelian
+              theory is in many aspects simpler than a non-abelian theory. Seiberg-Witten theory is in
+              particular able to distinguish smooth structures on four-dimensional manifolds, based on the
+              fact that they are encoded in partial differential equations on it like the Seiberg-Witten
+              equations. But the smooth Poincaré conjecture about smooth structures on the
+              four-dimensional sphere is still open, so research continues to find other partial differential
+              equations to encode the necessary information, which could come from physics again.
+	    </p>
+          </div>
+	</div>
+
+
+		<div class="seminar past-seminar">
+			 <h2 class="seminar-title">
+Existence of suitable weak solutions and their regularity for the 3D Chemotaxis-Navier-Stokes equations
+          </h2>            
+          <div class="meta-info">
+	    <div class="meta-item">
+              <strong>Speaker:</strong>
+              <span>Xiaomeng Cheng (陈晓萌, PhD Student @ DUT - Dalian University of Technology) </span>
+            </div>
+            <div class="meta-item">
+	      <strong>Date:</strong>
+              <span>Nov 27, 2025</span>
+            </div>
+            <div class="meta-item">
+              <strong>Time:</strong>
+              <span>9am - 10am</span>
+            </div>
+            <div class="meta-item">
+              <strong>Place:</strong>
+              <span>Room 114 </span>
+            </div>
+          </div>	  
+	  <div class="description">
+            <p>
+In 2004, Dombrowski et al. demonstrated that suspensions of aerobic bacteria
+              often generate fluid flows through the interplay of chemotaxis and buoyancy, described by the
+              chemotaxis-Navier-Stokes model, and observed self-concentration manifesting as turbulence
+              characterized by transient, self-reconstituting, high-speed jets that entrain nearby fluid to
+              form paired, oppositely signed vortices. Investigating the properties of these vortices (singular
+              points) is of significant interest, and one approach is to follow the partial regularity theory of
+              Caffarelli-Kohn-Nirenberg in studying the singularity properties of suitable weak solutions. In
+              this paper, we first establish the existence of suitable weak solutions for the three-dimensional
+              chemotaxis-Navier-Stokes equations, where the primary difficulty lies in deriving an
+              appropriate local energy inequality of weak type. Moreover, we derive a new a priori estimate
+              for the linear chemotaxis-Stokes model and present several $\varepsilon$-regularity criteria.
+
+	    </p>
+          </div>
+	</div>
+
+
+		<div class="seminar past-seminar">
+          <h2 class="seminar-title">
+            Stability of propagated fronts in scalar balance laws
+          </h2>   
+ 
+    <div class="meta-info"> 
+    	   <div class="meta-item">
+              <strong>Speaker:</strong>
+              <span>Louis Garénaux (PostDoc @ KIT - Karlsruhe Institute of Technology) </span>
+            </div> 
+      <div class="meta-item">
+	      <strong>Date:</strong>
+              <span>Dec 4, 2025</span>
+            </div>
+            <div class="meta-item">
+              <strong>Time:</strong>
+              <span>9am - 10am</span>
+            </div>
+            <div class="meta-item">
+              <strong>Place:</strong>
+              <span>Room 114</span>
+            </div>
+          </div>	  
+	  <div class="description">
+            <p>
+Scalar balance laws are advection-reaction equations, that appear either in biology or physic when one mesures the variation of a quantity over time.
+				In this presentation, we will focus on specific solutions of these equations, namely propagated waves that connect two distinct constant states. 
+				A large variety of such waves can be constructed, and we will discuss the stability of some of them. It is a joint work with L. M. Rodrigues.
+	    </p>
+          </div>
+	</div>	
+
+
+		<div class="seminar past-seminar">
+          <h2 class="seminar-title">
+            Large time dynamics in Klein-Gordon equations 
+          </h2>   
+ 
+    <div class="meta-info"> 
+                
+		   <div class="meta-item">
+              <strong>Speaker:</strong>
+              <span>Louis Garénaux (PostDoc @ KIT - Karlsruhe Institute of Technology) </span>
+            </div> 
+      <div class="meta-item">
+	      <strong>Date:</strong>
+              <span>Dec 11, 2025</span>
+            </div>
+            <div class="meta-item">
+              <strong>Time:</strong>
+              <span>9am - 10am</span>
+            </div>
+            <div class="meta-item">
+              <strong>Place:</strong>
+              <span>Room 114</span>
+            </div>
+          </div>	  
+	  <div class="description">
+            <p>
+	      The Klein-Gordon equation is a wave equation with an additional mass 
+damping term. In this presentation, I will review some literature about 
+the dynamic of such equation when settled on an unbounded 
+one-dimensional spatial domain. I will further present some new results 
+regarding the global existence and long time behaviour of solutions that 
+are initialy close to constant or periodic equilibria.
+Most notably, I will talk about a viscous approximation of this 
+equation, as well as describe how uniformly local orbital stability can 
+be obtained from polar decomposition.
+This is joint work with Björn de Rijk and Emile Bukieda.
+	    </p>
+          </div>
+	</div>	
+
+	 
+
+	<div class="seminar past-seminar">
+          <h2 class="seminar-title">
+	      Global well-posedness of the NLS hierarchy with nonzero boundary condition
+          </h2>            
+          <div class="meta-info">
+	    <div class="meta-item">
+              <strong>Speaker:</strong>
+              <span>Robert Wegner (PhD Student @ KIT - Karlsruhe Institute of Technology) </span>
+            </div>
+            <div class="meta-item">
+	      <strong>Date:</strong>
+              <span>Dec 11, 2025</span>
+            </div>
+            <div class="meta-item">
+              <strong>Time:</strong>
+              <span>10am - 11am</span>
+            </div>
+            <div class="meta-item">
+              <strong>Place:</strong>
+              <span>Room 114</span>
+            </div>
+          </div>	  
+	  <div class="description">
+            <p>
+				We introduce the NLS hierarchy and discuss its well-posedness with a nonzero boundary condition.
+
+Here the main difficulty is local well-posedness, since good conserved energies have already been constructed by H. Koch and X. Liao.
+
+We adopt a perturbative formulation and determine its structure sufficiently in order to apply techniques for general dispersive nonlinear PDE.
+
+	    </p>
+          </div>
+	</div>	
+
+
+	<div class="seminar past-seminar">
+          <h2 class="seminar-title">
+	      Long-wave KdV hierarchy approximation of the NLS hierarchy with nonzero boundary condition
+          </h2>            
+          <div class="meta-info">
+	    <div class="meta-item">
+              <strong>Speaker:</strong>
+              <span>Robert Wegner (PhD Student @ KIT - Karlsruhe Institute of Technology) </span>
+            </div>
+            <div class="meta-item">
+	      <strong>Date:</strong>
+              <span>Dec 18, 2025</span>
+            </div>
+            <div class="meta-item">
+              <strong>Time:</strong>
+              <span>9am - 10am</span>
+            </div>
+            <div class="meta-item">
+              <strong>Place:</strong>
+              <span>Room 114</span>
+            </div>
+          </div>	  
+	  <div class="description">
+            <p>
+	We consider long-wave solutions to the NLS hierarchy with nonzero boundary condition.
+
+Rewriting the conserved energies and momenta in hydrodynamic variables, we find that they are approximated by the conserved energies of the KdV hierarchy.
+
+Combining this with a similar approximation of the symplectic structures yields a formal approximation result for tthe hierarchies.
+
+We quantify this using energy estimates and previously established well-posedness results.
+
+	    </p>
+          </div>
+	</div>		
+
+
+		<div class="seminar past-seminar">
+          <h2 class="seminar-title">
+	      Global nonlinear stability of vortex sheets for the Navier-Stokes equations with large data 
+          </h2>            
+          <div class="meta-info">
+	    <div class="meta-item">
+              <strong>Speaker:</strong>
+              <span>Qian Yuan (袁谦, Associated Prof @ AMSS, CAS - Chinese Academy of Sciences) </span>
+            </div>
+            <div class="meta-item">
+	      <strong>Date:</strong>
+              <span>Dec 25, 2025</span>
+            </div>
+            <div class="meta-item">
+              <strong>Time:</strong>
+              <span>9am - 10am</span>
+            </div>
+            <div class="meta-item">
+              <strong>Place:</strong>
+              <span>Room 114 (ONLINE!!) </span>
+            </div>
+          </div>	  
+	  <div class="description">
+            <p>
+We shall discuss the global nonlinear stability of vortex sheets for the Navier-Stokes equations. 
+When the Mach number is small, we allow both the amplitude and the initial vorticity of the vortex sheets to be large. 
+We introduce an auxiliary flow and reformulate the problem as a new vortex sheet with small vorticity but subjected to a large perturbation. 
+Based on the decomposition of frequency, the largeness of the perturbation is encoded in the zero modes of the tangential velocity. 
+We find an essential cancellation property that there are no nonlinear interactions among these large zero modes in the zero-mode perturbed system. 
+This cancellation is owing to the shear structure inherent in the vortex sheets. 
+These observations enable us to derive the global estimates for strong solutions that are uniform with respect to the Mach number. 
+As a byproduct, we can justify the incompressible limit.
+
+	    </p>
+          </div>
+	</div>	
+
+
+			<div class="seminar past-seminar">
+          <h2 class="seminar-title">
+	      Einstein's Field Equations
+          </h2>            
+          <div class="meta-info">
+	    <div class="meta-item">
+              <strong>Speaker:</strong>
+              <span> Samuel Adrian Antz  (PhD student @ DUT - Dalian University of Technology)</span>
+            </div>
+            <div class="meta-item">
+	      <strong>Date:</strong>
+              <span>Jan 8, 2026</span>
+            </div>
+            <div class="meta-item">
+              <strong>Time:</strong>
+              <span>9am - 10am</span>
+            </div>
+            <div class="meta-item">
+              <strong>Place:</strong>
+              <span>Room 114</span>
+            </div>
+          </div>	  
+	  <div class="description">
+            <p>
+Einstein's Field Equations describe gravity as the curvature of spacetime. 
+Following the discovery of the equivalence of energy and mass, an expansion of Newton's theory of gravity became necessary. 
+Since it doesn't treat the motion or rotation of celestial bodies as a source of gravity, although these carry kinetic and rotational energy, 
+a contradiction appears. Fixing it requires an expansion to combine all these information. 
+In particular the new prospect that then even gravity becomes its own source, since gravitational waves also carry energy, 
+leads to a non-linear formulation and the precise partial differential equations were in development for an entire decade. 
+By now, their unique structure has been studied for over a century. 
+Countless strange solutions, for example allowing time travel, have already been found.
+
+	    </p>
+          </div>
+	</div>	
+
+		<div class="description">
+        <h2> Spring Semester 2026 </h2> 
+    </div>
+
+
+		<div class="seminar past-seminar">
+			 <h2 class="seminar-title">
+           Partially dissipative hyperbolic systems with time-dependent damping
+          </h2>            
+          <div class="meta-info">
+	    <div class="meta-item">
+              <strong>Speaker:</strong>
+              <span>Qimeng Zhu (朱启孟，PhD Student @ UPEC - University Paris-Est Créteil) </span>
+            </div>
+            <div class="meta-item">
+	      <strong>Date:</strong>
+              <span>Mar 5, 2026</span>
+            </div>
+            <div class="meta-item">
+              <strong>Time:</strong>
+              <span>9am - 9:45am</span>
+            </div>
+            <div class="meta-item">
+              <strong>Place:</strong>
+              <span>Room 114 </span>
+            </div>
+          </div>	  
+	  <div class="description">
+            <p>
+We consider quasilinear partially dissipative hyperbolic systems with time-dependent damping 
+in the whole space $R^d$, with $d \ge 1$. 
+Using an approach similar to that developed by Crin-Barat and Danchin, 
+we establish the global existence of small-amplitude solutions for systems endowed with a damping term of the form
+  $-\frac{K z}{(1+t)^{\alpha}}, \quad 0 &lt; \alpha \le 1.$
+We assume that the linearized system satisfies the Shizuta--Kawashima (SK) condition, 
+which ensures that the dissipation acts on all characteristic components through coupling. 
+The key idea is to construct a Lyapunov-type functional that compensates for the lack of full dissipation. 
+Such a functional was first introduced by Beauchard and Zuazua in the framework of control theory.
+
+	    </p>
+          </div>
+	</div>
+      
+      
+      
+    </div>
+
+    <div id="contact" class="page-content">
+        <h2>Contact</h2>
+        <p>is coming</p>
+    </div>
+
+    <script>
+        function showPage(pageId) {
+            // 1. 隐藏所有页面
+            const pages = document.getElementsByClassName('page-content');
+            for (let i = 0; i < pages.length; i++) {
+                pages[i].style.display = 'none';
+            }
+            // 2. 显示目标页面
+            document.getElementById(pageId).style.display = 'block';
+            
+            // 3. 强制 MathJax 重新渲染页面中的数学公式
+            if (typeof MathJax !== 'undefined') {
+                MathJax.typeset();
+            }
+        }
+    </script>
+</body>
+</html>
