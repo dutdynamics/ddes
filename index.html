@@ -194,7 +194,11 @@
 		
 		/* 3. 二级导航靠左 */
 		.sub-nav-bar {
-		    text-align: left;
+		    display: flex;            /* 开启弹性布局 */
+		    flex-direction: column;   /* 核心：设置为列排列（上下堆叠） */
+		    align-items: flex-start;  /* 核心：让按钮向左对齐 */
+		    gap: 12px;                /* 按钮之间的垂直间距，代替原来的 <br> */
+		    margin: 20px 0;           /* 上下外边距 */
 		}
 		
 		/* 4. 按钮统一样式 */
@@ -314,7 +318,7 @@
       
         
       <div class="sub-nav-bar">
-        <button onclick="showSubPage('past-fall2025')">Fall Semester 2025-2026</button> <br>
+        <button onclick="showSubPage('past-fall2025')">Fall Semester 2025-2026</button>
         <button onclick="showSubPage('past-spring2026')">Spring Semester 2026</button>
     </div>
       
