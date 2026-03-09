@@ -182,24 +182,37 @@
                 gap: 10px;
             }
         }
-      .nav-bar {
-          text-align: center;
-          margin: 20px 0;
-      }
-      .nav-bar button {
-          padding: 10px 20px;
-          margin: 0 5px;
-          border: none;
-          background-color: #3498db;
-          color: white;
-          border-radius: 20px; /* 圆角 */
-          cursor: pointer;
-          font-size: 1em;
-          transition: background 0.3s;
-      }
-      .nav-bar button:hover {
-          background-color: #2980b9;
-      }
+      	/* 1. 全局导航栏样式（主导航和二级导航通用基础） */
+		.nav-bar, .sub-nav-bar {
+		    margin: 20px 0;
+		}
+		
+		/* 2. 主导航居中 */
+		.nav-bar {
+		    text-align: center;
+		}
+		
+		/* 3. 二级导航靠左 */
+		.sub-nav-bar {
+		    text-align: left;
+		}
+		
+		/* 4. 按钮统一样式 */
+		.nav-bar button, .sub-nav-bar button {
+		    padding: 10px 20px;
+		    margin: 0 5px;
+		    border: none;
+		    background-color: #3498db;
+		    color: white;
+		    border-radius: 20px;
+		    cursor: pointer;
+		    font-size: 1em;
+		    transition: background 0.3s;
+		}
+		
+		.nav-bar button:hover, .sub-nav-bar button:hover {
+		    background-color: #2980b9;
+		}
 
         /* 页面内容块样式 */
         .page-content { display: none; }
@@ -300,7 +313,7 @@
         </div>
       
         
-      <div class="nav-bar">
+      <div class="sub-nav-bar">
         <button onclick="showSubPage('past-fall2025')">Fall Semester 2025-2026</button>
         <button onclick="showSubPage('past-spring2026')">Spring Semester 2026</button>
     </div>
@@ -1073,34 +1086,23 @@ Such a functional was first introduced by Beauchard and Zuazua in the framework 
 </div>
       
 
-    <script>
-        function showPage(pageId) {
-            // 1. 隐藏所有页面
-            const pages = document.getElementsByClassName('page-content');
-            for (let i = 0; i < pages.length; i++) {
-                pages[i].style.display = 'none';
-            }
-            // 2. 显示目标页面
-            document.getElementById(pageId).style.display = 'block';
-            
-            // 3. 强制 MathJax 重新渲染页面中的数学公式
-            if (typeof MathJax !== 'undefined') {
-                MathJax.typeset();
-            }
-        }
-      
-      // 新增的二级菜单切换函数
-      function showSubPage(subPageId) {
-          // 隐藏所有子页面
-          const subPages = document.getElementsByClassName('sub-page-content');
-          for (let sub of subPages) { sub.style.display = 'none'; }
-          // 显示目标子页面
-          const target = document.getElementById(subPageId);
-          if (target) {
-              target.style.display = 'block';
-              if (typeof MathJax !== 'undefined') MathJax.typeset();
-          }
-      }
-    </script>
+   <script>
+	    function showPage(pageId) {
+	        document.querySelectorAll('.page-content').forEach(p => p.style.display = 'none');
+	        document.getElementById(pageId).style.display = 'block';
+	    }
+	
+	    function showSubPage(subPageId) {
+	        document.querySelectorAll('.sub-page-content').forEach(p => p.style.display = 'none');
+	        document.getElementById(subPageId).style.display = 'block';
+	    }
+	
+	    // 页面加载后设置默认显示
+	    window.onload = function() {
+	        showPage('home');
+	        // 默认显示 Spring 2026
+	        showSubPage('past-spring2026');
+	    }
+	</script>
 </body>
 </html>
