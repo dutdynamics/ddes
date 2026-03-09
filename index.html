@@ -5,16 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DUT Differential Equations Seminar</title>
     
-    <!-- MathJax Configuration -->
     <script>
         MathJax = {
-            tex: {
-                inlineMath: [['$', '$'], ['\\(', '\\)']]
-            }
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] }
         };
     </script>
-    
-    <!-- Load MathJax from CDN -->
     <script id="MathJax-script" async src="https://cdn.bootcdn.net/ajax/libs/mathjax/4.0.0/tex-mml-chtml.js"></script>
     
     <style>
@@ -187,17 +182,56 @@
                 gap: 10px;
             }
         }
+      .nav-bar {
+          text-align: center;
+          margin: 20px 0;
+      }
+      .nav-bar button {
+          padding: 10px 20px;
+          margin: 0 5px;
+          border: none;
+          background-color: #3498db;
+          color: white;
+          border-radius: 20px; /* 圆角 */
+          cursor: pointer;
+          font-size: 1em;
+          transition: background 0.3s;
+      }
+      .nav-bar button:hover {
+          background-color: #2980b9;
+      }
+
+        /* 页面内容块样式 */
+        .page-content { display: none; }
+        #home { display: block; } /* 默认显示首页 */
+
+        /* 保留你原有的研讨会样式 */
+        .seminar { background: white; border-left: 4px solid #27ae60; padding: 25px; margin: 20px 0; border-radius: 12px; box-shadow: 0 3px 8px rgba(0,0,0,0.08); }
+        .section-header { display: flex; align-items: center; gap: 15px; margin: 40px 0 20px 0; padding-bottom: 10px; border-bottom: 3px solid #27ae60; color: #27ae60; }
+        .seminar-title { color: #2c3e50; margin-top: 0; }
+        .meta-info { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin: 20px 0; background: #f8f9fa; padding: 20px; border-radius: 8px; }
+      
+      	/* 3. 在这里添加新增加的二级页面控制样式 */
+        .page-content { display: none; }
+        .sub-page-content { display: none; } /* 新增：二级页面默认隐藏 */
     </style>
 </head>
 
 <body>
     <div class="header">
         <h1>DUT Differential Equations Seminar (DDES)</h1>
-        <p>Spring 2026 • Weekly Seminars (Thursday, 9am, Room 114) • WeChat Group: DDES Seminar</p> 
+        <p>Spring 2026 • Weekly Seminars (Thursday, 9am, Room 114) • WeChat Group: DDES Seminar</p>
     </div>
 
-	<div class="description">
-		<p>
+    <div class="nav-bar">
+        <button onclick="showPage('home')">Home Page</button>
+        <button onclick="showPage('upcoming')">Upcoming Events</button>
+        <button onclick="showPage('past')">Past Events</button>
+        <button onclick="showPage('contact')">Contact US</button>
+    </div>
+
+    <div id="home" class="page-content">
+        <p>
 			The DDES Seminar is a research seminar series focused on differential equations, held at <a href="https://math.dlut.edu.cn/"    target="_blank" rel="noopener">  School of Mathematical Sciences</a>,
 		 <a href="https://dutdice.dlut.edu.cn/en/University/Living_in_Dalian.htm"    target="_blank" rel="noopener"> 	Dalian University of Technology (DUT)</a>.
 			Each seminar talk lasts for 45 minutes, followed by a question session. Afterward, everyone is welcome to chat  with the  speakers.  <br> <br>
@@ -209,20 +243,18 @@
 			Dingli Jiang (蒋鼎立， 1191991080(at)qq.com),  <br>
 			<a href="https://faculty.dlut.edu.cn/~M3aUJf/zh_CN/index.htm" target="_blank" rel="noopener">Xian Liao</a> (廖娴， liao(at)dlut.edu.cn). 
 		</p>
-	</div>
-    
-    <!-- UPCOMING EVENTS SECTION -->
-			
-    <div class="upcoming-section">
-        <div class="section-header">
+    </div>
+<!-- UPCOMING EVENTS SECTION -->
+    <div id="upcoming" class="page-content">
+      
+      <div class="section-header">
             <span class="section-icon">📅</span>
             <h2>Upcoming   Events</h2>
         </div>
-
-		
-			  
-
-<div class="seminar upcoming-seminar">
+      
+      
+      
+        <div class="seminar upcoming-seminar">
 			 <h2 class="seminar-title">
            Weak convergence of a full-discretization to stochastic Allen–Cahn equation driven by multiplicative noise
           </h2>            
@@ -262,33 +294,27 @@
 	    </p>
           </div>
 	</div>	
-
-
-
-	
-		 
-		
-</div>	
-    
-    
-    <!-- PAST EVENTS SECTION --> 
-
-
-
-	
-    <div class="past-section">
+      
+      
+      
+      
+      
+    </div>
+<!-- PAST EVENTS SECTION --> 
+    <div id="past" class="page-content">
         <div class="section-header">
             <span class="section-icon">📚</span>
             <h2>Past Events</h2>
         </div>
-
-
-			<div class="description">
-        <h2> Fall Semester 2025-2026 </h2> 
+      
+        
+      <div class="nav-bar">
+        <button onclick="showSubPage('past-fall2025')">Fall Semester 2025-2026</button>
+        <button onclick="showSubPage('past-spring2026')">Spring Semester 2026</button>
     </div>
-		
-
-		<div class="seminar past-seminar">
+      
+    <div id="past-fall2025" class="sub-page-content">
+        <div class="seminar past-seminar">
 			 <h2 class="seminar-title">
            Random attractors for SDEs
           </h2>            
@@ -1010,13 +1036,11 @@ Countless strange solutions, for example allowing time travel, have already been
 	    </p>
           </div>
 	</div>	
-
-		<div class="description">
-        <h2> Spring Semester 2026 </h2> 
+      
     </div>
 
-
-		<div class="seminar past-seminar">
+    <div id="past-spring2026" class="sub-page-content">
+        <div class="seminar past-seminar">
 			 <h2 class="seminar-title">
            Partially dissipative hyperbolic systems with time-dependent damping
           </h2>            
@@ -1044,7 +1068,7 @@ We consider quasilinear partially dissipative hyperbolic systems with time-depen
 in the whole space $R^d$, with $d \ge 1$. 
 Using an approach similar to that developed by Crin-Barat and Danchin, 
 we establish the global existence of small-amplitude solutions for systems endowed with a damping term of the form
-  $-\frac{K z}{(1+t)^{\alpha}}, \qquad 0 < \alpha \le 1.$
+  $-\frac{K z}{(1+t)^{\alpha}}, \quad 0 &lt; \alpha \le 1.$
 We assume that the linearized system satisfies the Shizuta--Kawashima (SK) condition, 
 which ensures that the dissipation acts on all characteristic components through coupling. 
 The key idea is to construct a Lyapunov-type functional that compensates for the lack of full dissipation. 
@@ -1053,8 +1077,44 @@ Such a functional was first introduced by Beauchard and Zuazua in the framework 
 	    </p>
           </div>
 	</div>
-
-		
     </div>
+</div>
+      
+
+
+    <div id="contact" class="page-content">
+        <h2>Contact</h2>
+        <p>is coming</p>
+    </div>
+
+    <script>
+        function showPage(pageId) {
+            // 1. 隐藏所有页面
+            const pages = document.getElementsByClassName('page-content');
+            for (let i = 0; i < pages.length; i++) {
+                pages[i].style.display = 'none';
+            }
+            // 2. 显示目标页面
+            document.getElementById(pageId).style.display = 'block';
+            
+            // 3. 强制 MathJax 重新渲染页面中的数学公式
+            if (typeof MathJax !== 'undefined') {
+                MathJax.typeset();
+            }
+        }
+      
+      // 新增的二级菜单切换函数
+      function showSubPage(subPageId) {
+          // 隐藏所有子页面
+          const subPages = document.getElementsByClassName('sub-page-content');
+          for (let sub of subPages) { sub.style.display = 'none'; }
+          // 显示目标子页面
+          const target = document.getElementById(subPageId);
+          if (target) {
+              target.style.display = 'block';
+              if (typeof MathJax !== 'undefined') MathJax.typeset();
+          }
+      }
+    </script>
 </body>
 </html>
