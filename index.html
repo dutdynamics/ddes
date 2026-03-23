@@ -61,18 +61,17 @@
 
 		/* --- 在这里添加新的图标样式 --- */
         .badge-minicourse {
-            display: inline-block;
-            padding: 2px 12px;
-            background-color: #27ae60; 
-            color: white;
-            border-radius: 50px; 
-            font-size: 0.7em; /* 稍微调小一点，显得更精致 */
-            font-weight: 600;
-            vertical-align: middle;
-            margin-left: 10px;
-            line-height: 1.8;
-            text-transform: none; /* 保持首字母大写 */
-        }
+		    display: inline-block;
+		    padding: 3px 14px; /* 稍微加厚一点，适合单独成行 */
+		    background-color: #27ae60; 
+		    color: white;
+		    border-radius: 50px; 
+		    font-size: 0.65em; /* 字体稍微调小，与主标题形成层级感 */
+		    font-weight: 600;
+		    line-height: 1.6;
+		    text-transform: uppercase; /* 可选：全大写会让这种小标签看起来更正式 */
+		    letter-spacing: 0.5px;
+		}
         /* ---------------------------- */
         
         .past-section .section-header {
@@ -331,7 +330,7 @@
 		<div class="seminar upcoming-seminar">
 			 <h2 class="seminar-title">
             TBA <br>
-				 <span class="badge-minicourse">Minicourse</span>
+			<span class="badge-minicourse" style="margin-left: 0; margin-top: 8px;">Minicourse</span>
           </h2>            
           <div class="meta-info">
 	    <div class="meta-item">
