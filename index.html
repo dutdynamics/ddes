@@ -2157,4 +2157,78 @@
                             <p>
                                 I will discuss a directed, non-exchangeable particle approximation of McKean-Vlasov diffusions, where particle \(i\) interacts
                                 only with its predecessors through their empirical measure. Although the system has the same McKean-Vlasov limit as the classical
-                                exchangeable model, its sequential structur
+                                exchangeable model, its sequential structure leads to different quantitative and fluctuation behavior.<br>
+                                The first part concerns propagation of chaos via an incremental path-space relative entropy, giving sharp \((i-1)^{-1}\) one-step entropy
+                                estimates and \(N^{-1/2}\)-scale empirical convergence in negative Sobolev norms. A key ingredient is the construction of auxiliary random
+                                measures from conditional laws, which replace predecessor empirical measures by averaged conditional measures. The second part presents
+                                a central limit theorem: the limiting averaged fluctuation is Gaussian, but its equation is coupled to a hierarchy of logarithmically weighted
+                                fluctuation fields.
+                            </p>
+                        </section>
+                    </article>
+                    <!-- past-spring2026结束位置 -->
+                </section>
+                <!-- 过去事件结束位置 -->
+            </section>
+        </main>
+        <button class="back-to-top" type="button" aria-label="Back to top" aria-hidden="true" tabindex="-1"></button>
+        <script>
+            function updatePressed(buttons, id) {
+                buttons.forEach(button => {
+                    const target = button.dataset.target;
+                    button.setAttribute('aria-pressed', String(target === id));
+                });
+            }
+            function showPage(pageId) {
+                document.querySelectorAll('.page-content').forEach(page => {
+                    page.hidden = page.id !== pageId;
+                });
+                updatePressed(document.querySelectorAll('.nav-bar button'), pageId);
+            }
+            function showSubPage(subPageId) {
+                document.querySelectorAll('.sub-page-content').forEach(page => {
+                    page.hidden = page.id !== subPageId;
+                });
+                updatePressed(document.querySelectorAll('.sub-nav-bar button'), subPageId);
+            }
+            function initBackToTop() {
+                const button = document.querySelector('.back-to-top');
+                if (!button) return;
+                const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+                let ticking = false;
+                const setVisible = () => {
+                    const visible = window.scrollY > 120;
+                    button.classList.toggle('is-visible', visible);
+                    button.setAttribute('aria-hidden', String(!visible));
+                    button.tabIndex = visible ? 0 : -1;
+                    ticking = false;
+                };
+                const requestUpdate = () => {
+                    if (!ticking) {
+                        window.requestAnimationFrame(setVisible);
+                        ticking = true;
+                    }
+                };
+                button.addEventListener('click', () => {
+                    window.scrollTo({
+                        top: 0,
+                        behavior: reduceMotion.matches ? 'auto' : 'smooth'
+                    });
+                });
+                window.addEventListener('scroll', requestUpdate, { passive: true });
+                setVisible();
+            }
+            document.addEventListener('DOMContentLoaded', () => {
+                document.querySelectorAll('.nav-bar button[data-target]').forEach(button => {
+                    button.addEventListener('click', () => showPage(button.dataset.target));
+                });
+                document.querySelectorAll('.sub-nav-bar button[data-target]').forEach(button => {
+                    button.addEventListener('click', () => showSubPage(button.dataset.target));
+                });
+                showPage('home');
+                showSubPage('past-spring2026');
+                initBackToTop();
+            });
+        </script>
+    </body>
+</html>
