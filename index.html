@@ -193,6 +193,69 @@
                 color: #ffffff;
                 box-shadow: 0 8px 20px rgba(15, 138, 112, 0.18);
             }
+            .back-to-top {
+                position: fixed;
+                right: max(18px, calc((100vw - 1180px) / 2 + 22px));
+                bottom: 24px;
+                z-index: 40;
+                display: grid;
+                place-items: center;
+                width: 48px;
+                height: 48px;
+                min-height: 48px;
+                padding: 0;
+                border: 1px solid rgba(255, 255, 255, 0.72);
+                border-radius: 8px;
+                background: var(--accent);
+                color: #ffffff;
+                box-shadow: 0 16px 34px rgba(15, 138, 112, 0.24);
+                opacity: 0;
+                pointer-events: none;
+                visibility: hidden;
+                transform: translateY(12px) scale(0.96);
+                transition:
+                opacity 180ms var(--ease),
+                transform 220ms var(--ease),
+                visibility 180ms var(--ease),
+                background-color 180ms var(--ease),
+                box-shadow 180ms var(--ease);
+            }
+            .back-to-top::before,
+            .back-to-top::after {
+                content: "";
+                position: absolute;
+                display: block;
+            }
+            .back-to-top::before {
+                width: 13px;
+                height: 13px;
+                border-top: 3px solid currentColor;
+                border-left: 3px solid currentColor;
+                transform: translateY(3px) rotate(45deg);
+            }
+            .back-to-top::after {
+                width: 3px;
+                height: 20px;
+                border-radius: 999px;
+                background: currentColor;
+                transform: translateY(5px);
+            }
+            .back-to-top.is-visible {
+                opacity: 1;
+                pointer-events: auto;
+                visibility: visible;
+                transform: translateY(0) scale(1);
+            }
+            .back-to-top:hover {
+                background: var(--accent-strong);
+                color: #ffffff;
+                box-shadow: 0 18px 38px rgba(7, 102, 83, 0.3);
+                transform: translateY(-2px) scale(1);
+            }
+            .back-to-top:focus-visible {
+                outline: 3px solid rgba(15, 138, 112, 0.24);
+                outline-offset: 3px;
+            }
             .site-main {
                 margin-top: 32px;
             }
@@ -515,6 +578,13 @@
                 button {
                     width: 100%;
                     text-align: center;
+                }
+                .back-to-top {
+                    right: 16px;
+                    bottom: 18px;
+                    width: 44px;
+                    height: 44px;
+                    min-height: 44px;
                 }
                 .section-header {
                     align-items: flex-start;
@@ -2087,49 +2157,4 @@
                             <p>
                                 I will discuss a directed, non-exchangeable particle approximation of McKean-Vlasov diffusions, where particle \(i\) interacts
                                 only with its predecessors through their empirical measure. Although the system has the same McKean-Vlasov limit as the classical
-                                exchangeable model, its sequential structure leads to different quantitative and fluctuation behavior.<br>
-                                The first part concerns propagation of chaos via an incremental path-space relative entropy, giving sharp \((i-1)^{-1}\) one-step entropy
-                                estimates and \(N^{-1/2}\)-scale empirical convergence in negative Sobolev norms. A key ingredient is the construction of auxiliary random
-                                measures from conditional laws, which replace predecessor empirical measures by averaged conditional measures. The second part presents
-                                a central limit theorem: the limiting averaged fluctuation is Gaussian, but its equation is coupled to a hierarchy of logarithmically weighted
-                                fluctuation fields.
-                            </p>
-                        </section>
-                    </article>
-                    <!-- past-spring2026结束位置 -->
-                </section>
-                <!-- 过去事件结束位置 -->
-            </section>
-        </main>
-        <script>
-            function updatePressed(buttons, id) {
-                buttons.forEach(button => {
-                    const target = button.dataset.target;
-                    button.setAttribute('aria-pressed', String(target === id));
-                });
-            }
-            function showPage(pageId) {
-                document.querySelectorAll('.page-content').forEach(page => {
-                    page.hidden = page.id !== pageId;
-                });
-                updatePressed(document.querySelectorAll('.nav-bar button'), pageId);
-            }
-            function showSubPage(subPageId) {
-                document.querySelectorAll('.sub-page-content').forEach(page => {
-                    page.hidden = page.id !== subPageId;
-                });
-                updatePressed(document.querySelectorAll('.sub-nav-bar button'), subPageId);
-            }
-            document.addEventListener('DOMContentLoaded', () => {
-                document.querySelectorAll('.nav-bar button[data-target]').forEach(button => {
-                    button.addEventListener('click', () => showPage(button.dataset.target));
-                });
-                document.querySelectorAll('.sub-nav-bar button[data-target]').forEach(button => {
-                    button.addEventListener('click', () => showSubPage(button.dataset.target));
-                });
-                showPage('home');
-                showSubPage('past-spring2026');
-            });
-        </script>
-    </body>
-</html>
+                                exchangeable model, its sequential structur
