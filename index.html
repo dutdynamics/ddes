@@ -2173,6 +2173,7 @@
         </main>
         <button class="back-to-top" type="button" aria-label="Back to top" aria-hidden="true" tabindex="-1"></button>
         <script>
+            let refreshBackToTop = () => {};
             function updatePressed(buttons, id) {
                 buttons.forEach(button => {
                     const target = button.dataset.target;
@@ -2184,12 +2185,14 @@
                     page.hidden = page.id !== pageId;
                 });
                 updatePressed(document.querySelectorAll('.nav-bar button'), pageId);
+                refreshBackToTop();
             }
             function showSubPage(subPageId) {
                 document.querySelectorAll('.sub-page-content').forEach(page => {
                     page.hidden = page.id !== subPageId;
                 });
                 updatePressed(document.querySelectorAll('.sub-nav-bar button'), subPageId);
+                refreshBackToTop();
             }
             function initBackToTop() {
                 const button = document.querySelector('.back-to-top');
@@ -2209,6 +2212,7 @@
                         ticking = true;
                     }
                 };
+                refreshBackToTop = requestUpdate;
                 button.addEventListener('click', () => {
                     window.scrollTo({
                         top: 0,
