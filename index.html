@@ -269,6 +269,7 @@
                 position: relative;
                 overflow: hidden;
                 display: block;
+                --intro-copy-width: 70rem;
                 margin: 0 0 34px;
                 padding: 10px clamp(28px, 5vw, 72px) 0;
                 color: #27323d;
@@ -284,18 +285,32 @@
             .intro-panel p {
                 margin: 0;
             }
+            .intro-lead,
+            .intro-note,
+            .intro-contacts,
+            .intro-related {
+                width: min(100%, var(--intro-copy-width));
+                max-width: none;
+                margin-inline: auto;
+            }
             .intro-lead {
-                max-width: 112ch;
                 font-size: clamp(1rem, 1.25vw, 1.12rem);
                 line-height: 1.74;
+                text-align: justify;
+                text-align-last: left;
+                text-wrap: pretty;
+                hyphens: auto;
             }
             .intro-note {
-                max-width: 112ch;
                 padding-top: 14px;
                 border-top: 1px solid var(--line);
                 color: #3d4854;
                 font-size: 0.98rem;
                 line-height: 1.7;
+                text-align: justify;
+                text-align-last: left;
+                text-wrap: pretty;
+                hyphens: auto;
             }
             .intro-panel em {
                 color: var(--ink);
@@ -305,10 +320,12 @@
             .intro-contacts {
                 position: relative;
                 z-index: 1;
-                display: flex;
-                flex-wrap: wrap;
-                gap: 8px 14px;
+                display: block;
                 margin-top: 10px !important;
+                text-align: justify;
+                text-align-last: left;
+                text-wrap: pretty;
+                hyphens: auto;
             }
             .contact-line {
                 display: inline;
@@ -332,6 +349,10 @@
                 color: #3d4854;
                 font-size: 0.94rem;
                 line-height: 1.55;
+                text-align: justify;
+                text-align-last: left;
+                text-wrap: pretty;
+                hyphens: auto;
             }
             .section-header {
                 display: flex;
@@ -487,7 +508,7 @@
             .meta-item:first-child dd {
                 color: #102a43;
                 font-size: 1.04rem;
-                font-weight: 760;
+                font-weight: 620;
             }
             .description {
                 max-width: 100%;
@@ -602,8 +623,10 @@
                     max-width: none;
                 }
                 .intro-contacts {
-                    display: grid;
+                    display: block;
                     gap: 6px;
+                    max-width: none;
+                    text-align: justify;
                 }
                 .meta-info {
                     grid-template-columns: repeat(3, minmax(0, 1fr));
