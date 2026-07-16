@@ -3,7 +3,10 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="DUT Differential Equations Seminar (DDES) at Dalian University of Technology.">
+        <meta name="theme-color" content="#003366">
         <title>DUT Differential Equations Seminar</title>
+        <link rel="icon" type="image/svg+xml" href="assets/dlade-favicon.svg">
         <script>
             MathJax = {
                 tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] }
@@ -676,14 +679,22 @@
                 }
             }
         </style>
+        <link rel="stylesheet" href="styles.css">
+        <script src="script.js" defer></script>
     </head>
     <body>
-        <header class="site-header">
-            <h1 id="site-title">DUT Differential Equations Seminar (DDES)</h1>
-            <p>Spring 2026 • Weekly Seminars (Thursday, 9am, Room 114) • WeChat Group: DDES Seminar</p>
-        </header>
-        <main class="site-main" aria-labelledby="site-title">
-            <section class="intro-panel">
+        <a class="skip-link" href="#main-content">Skip to content</a>
+        <main id="main-content" class="site-main" aria-labelledby="site-title">
+            <section class="hero" aria-labelledby="site-title">
+                <div class="hero-grid" aria-hidden="true"></div>
+                <div class="shell hero-layout">
+                    <div class="hero-copy reveal">
+                        <h1 id="site-title"><span class="title-accent">D</span>UT <span class="title-accent">D</span>ifferential <span class="title-accent">E</span>quations <span class="title-accent">S</span>eminar</h1>
+                        <p class="hero-lede">Spring 2026 • Weekly Seminars (Thursday, 9am, Room 114) • WeChat Group: DDES Seminar</p>
+                    </div>
+                </div>
+            </section>
+            <section class="intro-panel section shell reveal" aria-label="About the seminar">
                 <div class="intro-main">
                     <p class="intro-lead">
                         The DDES Seminar is a research seminar series focused on differential equations, held at <a href="https://math.dlut.edu.cn/"    target="_blank" rel="noopener">  School of Mathematical Sciences</a>,
@@ -704,15 +715,20 @@
                     </p>
                 </div>
             </section>
-            <nav class="nav-bar" aria-label="Main navigation">
-                <button type="button" data-target="home" aria-controls="home" aria-pressed="true">Home Page</button>
-                <button type="button" data-target="past" aria-controls="past" aria-pressed="false">Past Events</button>
-            </nav>
-            <section id="home" class="page-content home-page" aria-labelledby="upcoming-heading">
+            <section id="home" class="page-content home-page shell" aria-labelledby="upcoming-heading">
+                <div class="view-switcher">
+                    <nav class="primary-nav" id="primary-navigation" aria-label="Event view">
+                        <button class="nav-link active" type="button" data-target="home" aria-controls="home" aria-pressed="true">Upcoming events</button>
+                        <button class="nav-link" type="button" data-target="past" aria-controls="past" aria-pressed="false">Past events</button>
+                    </nav>
+                </div>
                 <header class="section-header">
-                    <span class="section-icon">📅</span>
-                    <h2 id="upcoming-heading">Upcoming   Events</h2>
+                    <div>
+                        <p class="eyebrow dark"><span></span>Schedule</p>
+                        <h2 id="upcoming-heading">Upcoming Events</h2>
+                    </div>
                 </header>
+                <div class="calendar-mount" data-calendar="upcoming" aria-label="Upcoming events calendar"></div>
                 <!-- Semester-end notice: remove "hidden" to show this message. -->
             <article class="seminar notice-seminar semester-end-notice" >
                 <section class="description" aria-label="Semester-end notice">
@@ -727,10 +743,10 @@
                 <!-- 将来事件结束位置 -->
             </section>
             <!-- PAST EVENTS SECTION -->
-            <section id="past" class="page-content past-page" aria-labelledby="past-heading" hidden>
+            <section id="past" class="page-content past-page shell" aria-labelledby="past-heading" hidden>
                 <header class="section-header">
-                    <span class="section-icon">📚</span>
                     <h2 id="past-heading">Past Events</h2>
+                    <button class="past-return" type="button" data-target="home">← Upcoming Events</button>
                 </header>
                 <div class="sub-nav-bar">
                     <button type="button" data-target="past-fall2025" aria-controls="past-fall2025" aria-pressed="false">
@@ -740,6 +756,7 @@
                         Spring Semester 2026
                     </button>
                 </div>
+                <div class="calendar-mount" data-calendar="past" aria-label="Past events calendar"></div>
                 <section id="past-fall2025" class="sub-page-content semester-section" hidden>
                     <article class="seminar past-seminar">
                         <h2 class="seminar-title">
@@ -2236,6 +2253,29 @@
                 <!-- 过去事件结束位置 -->
             </section>
         </main>
+        <footer class="site-footer">
+            <div class="shell footer-grid">
+                <div class="footer-brand">
+                    <div><strong>DDES</strong><p>DUT Differential Equations Seminar<br>School of Mathematical Sciences</p></div>
+                </div>
+                <div class="footer-contact">
+                    <span>Organizing team</span>
+                    <p>Mengyu Cheng · mycheng(at)dlut.edu.cn<br>Dingli Jiang · dinglijiang1018(at)foxmail.com<br>Xian Liao · liao(at)dlut.edu.cn</p>
+                </div>
+                <div class="footer-links">
+                    <span>Explore</span>
+                    <button type="button" data-target="home">Upcoming events</button>
+                    <button type="button" data-target="past">Past events</button>
+                </div>
+                <div class="footer-links">
+                    <span>Connect</span>
+                    <a href="https://www.dlut.edu.cn/" target="_blank" rel="noopener">Dalian University of Technology ↗</a>
+                    <a href="https://math.dlut.edu.cn/" target="_blank" rel="noopener">School of Mathematical Sciences ↗</a>
+                    <a href="https://dutdynamics.github.io/ds/" target="_blank" rel="noopener">DUT Dynamics Seminar ↗</a>
+                </div>
+            </div>
+            <div class="shell footer-bottom"><p>© 2026 DUT Differential Equations Seminar</p><button type="button" data-back-to-top>Back to top ↑</button></div>
+        </footer>
         <button class="back-to-top" type="button" aria-label="Back to top" aria-hidden="true" tabindex="-1"></button>
         <script>
             let refreshBackToTop = () => {};
