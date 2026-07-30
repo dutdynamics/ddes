@@ -179,8 +179,12 @@
     });
 
     const now = new Date();
-    let anchor = new Date(now.getFullYear(), now.getMonth(), 1, 12);
-    if (allDates.length) {
+    const configuredStart = mount.dataset.calendarStart?.match(/^(\d{4})-(\d{2})$/);
+    const minimumMonth = configuredStart
+      ? new Date(Number(configuredStart[1]), Number(configuredStart[2]) - 1, 1, 12)
+      : null;
+    let anchor = minimumMonth || new Date(now.getFullYear(), now.getMonth(), 1, 12);
+    if (!minimumMonth && allDates.length) {
       const ordered = [...allDates].sort((a, b) => a - b);
       const preferred = mode === 'past' ? ordered[ordered.length - 1] : ordered[0];
       anchor = new Date(preferred.getFullYear(), preferred.getMonth(), 1, 12);
@@ -208,6 +212,7 @@
     const title = mount.querySelector('.calendar-title');
     const grid = mount.querySelector('.calendar-grid');
     const agenda = mount.querySelector('.calendar-agenda');
+    const previousButton = panel.querySelector('[data-calendar-action="previous"]');
 
     function renderAgenda(dayEvents = [], date = null) {
       agenda.replaceChildren();
@@ -239,6 +244,7 @@
 
     function render() {
       title.textContent = `${monthNames[anchor.getMonth()]} ${anchor.getFullYear()}`;
+      previousButton.disabled = Boolean(minimumMonth && anchor <= minimumMonth);
       grid.replaceChildren();
       const first = new Date(anchor.getFullYear(), anchor.getMonth(), 1, 12);
       const mondayOffset = (first.getDay() + 6) % 7;
@@ -272,7 +278,7 @@
             grid.querySelectorAll('.calendar-day.is-selected').forEach(item => item.classList.remove('is-selected'));
             cell.classList.add('is-selected');
             renderAgenda(dayEvents, date);
-            if (dayEvents.length === 1) focusEvent(dayEvents[0]);
+            focusEvent(dayEvents[0]);
           });
           cell.append(button);
         } else {
@@ -291,7 +297,8 @@
       renderAgenda();
     }
 
-    panel.querySelector('[data-calendar-action="previous"]').addEventListener('click', () => {
+    previousButton.addEventListener('click', () => {
+      if (minimumMonth && anchor <= minimumMonth) return;
       anchor = new Date(anchor.getFullYear(), anchor.getMonth() - 1, 1, 12);
       render();
     });
