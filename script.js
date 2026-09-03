@@ -9,6 +9,8 @@
   ]);
 
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  let sharedPastCalendar = null;
+  let sharedPastCalendarController = null;
 
   function closeMenu() {
     const toggle = document.querySelector('.menu-toggle');
@@ -26,8 +28,6 @@
     document.querySelectorAll('.page-content').forEach(page => {
       page.hidden = page.id !== pageId;
     });
-    document.body.classList.toggle('viewing-past', pageId === 'past');
-
     document.querySelectorAll('.primary-nav .nav-link[data-target]').forEach(button => {
       const active = button.dataset.target === pageId;
       button.classList.toggle('active', active);
@@ -37,13 +37,13 @@
     closeMenu();
     if (shouldScroll) {
       window.requestAnimationFrame(() => {
-        const scrollTarget = pageId === 'home' ? document.querySelector('#home .view-switcher') : destination;
+        const scrollTarget = document.querySelector('.view-switcher');
         (scrollTarget || destination).scrollIntoView({ behavior: reduceMotion.matches ? 'auto' : 'smooth', block: 'start' });
       });
     }
   }
 
-  function setSubPage(subPageId) {
+  function setSubPage(subPageId, syncCalendarMonth = true) {
     const destination = document.getElementById(subPageId);
     if (!destination || !destination.classList.contains('sub-page-content')) return;
 
@@ -53,6 +53,7 @@
     document.querySelectorAll('.sub-nav-bar button[data-target]').forEach(button => {
       button.setAttribute('aria-pressed', String(button.dataset.target === subPageId));
     });
+    if (syncCalendarMonth) setSharedPastCalendarMonth(subPageId);
   }
 
   // Keep the original inline navigation hooks working while adding the new header controls.
@@ -152,7 +153,7 @@
     if (parentPage) setPage(parentPage.id, false);
 
     const semester = card.closest('.sub-page-content');
-    if (semester) setSubPage(semester.id);
+    if (semester) setSubPage(semester.id, false);
 
     document.querySelectorAll('.seminar.event-highlight').forEach(item => item.classList.remove('event-highlight'));
     card.classList.add('event-highlight');
@@ -180,13 +181,17 @@
 
     const now = new Date();
     const configuredStart = mount.dataset.calendarStart?.match(/^(\d{4})-(\d{2})$/);
-    const minimumMonth = configuredStart
+    const initialMonth = configuredStart
       ? new Date(Number(configuredStart[1]), Number(configuredStart[2]) - 1, 1, 12)
       : null;
-    let anchor = minimumMonth || new Date(now.getFullYear(), now.getMonth(), 1, 12);
-    if (!minimumMonth && allDates.length) {
+    const configuredMinimum = mount.dataset.calendarMin?.match(/^(\d{4})-(\d{2})$/);
+    const minimumMonth = configuredMinimum
+      ? new Date(Number(configuredMinimum[1]), Number(configuredMinimum[2]) - 1, 1, 12)
+      : null;
+    let anchor = initialMonth || new Date(now.getFullYear(), now.getMonth(), 1, 12);
+    if (!initialMonth && allDates.length) {
       const ordered = [...allDates].sort((a, b) => a - b);
-      const preferred = mode === 'past' ? ordered[ordered.length - 1] : ordered[0];
+      const preferred = ordered[0];
       anchor = new Date(preferred.getFullYear(), preferred.getMonth(), 1, 12);
     }
 
@@ -308,19 +313,48 @@
     });
 
     render();
+    return {
+      showMonth(value) {
+        const requestedMonth = value?.match(/^(\d{4})-(\d{2})$/);
+        if (!requestedMonth) return;
+        anchor = new Date(Number(requestedMonth[1]), Number(requestedMonth[2]) - 1, 1, 12);
+        render();
+      }
+    };
+  }
+
+  function setSharedPastCalendarMonth(scopeId) {
+    const scope = document.getElementById(scopeId);
+    if (!scope || !scope.classList.contains('semester-section')) return;
+    sharedPastCalendarController?.showMonth(scope.dataset.calendarStart);
+    if (sharedPastCalendar) sharedPastCalendar.dataset.calendarScope = scopeId;
   }
 
   function initCalendars() {
     const usedIds = new Set([...document.querySelectorAll('[id]')].map(node => node.id));
-    const upcomingEvents = collectEvents(document.getElementById('home'), usedIds);
+    const allEvents = [];
+
+    const upcomingCalendar = document.querySelector('[data-calendar="upcoming"]');
+    if (upcomingCalendar) {
+      const scope = document.getElementById(upcomingCalendar.dataset.calendarScope || 'home');
+      const events = collectEvents(scope, usedIds);
+      createCalendar(upcomingCalendar, events, 'upcoming');
+      allEvents.push(...events);
+    }
+
+    sharedPastCalendar = document.querySelector('[data-calendar="past"]');
+    const semesterSections = [...document.querySelectorAll('#past .semester-section')];
+    const activeSemester = semesterSections.find(scope => !scope.hidden) || semesterSections[0];
     const pastEvents = collectEvents(document.getElementById('past'), usedIds);
+    allEvents.push(...pastEvents);
 
-    document.querySelectorAll('[data-calendar]').forEach(mount => {
-      const mode = mount.dataset.calendar;
-      createCalendar(mount, mode === 'past' ? pastEvents : upcomingEvents, mode);
-    });
+    if (sharedPastCalendar && activeSemester) {
+      sharedPastCalendar.dataset.calendarScope = activeSemester.id;
+      sharedPastCalendar.dataset.calendarStart = activeSemester.dataset.calendarStart || '';
+      sharedPastCalendarController = createCalendar(sharedPastCalendar, pastEvents, 'past');
+    }
 
-    return [...upcomingEvents, ...pastEvents];
+    return allEvents;
   }
 
   function initReveal() {
@@ -369,7 +403,7 @@
     initHeader();
     initReveal();
 
-    document.querySelectorAll('.primary-nav [data-target], .past-return[data-target], .footer-links [data-target]').forEach(control => {
+    document.querySelectorAll('.primary-nav [data-target], .footer-links [data-target]').forEach(control => {
       control.addEventListener('click', () => setPage(control.dataset.target, true));
     });
 

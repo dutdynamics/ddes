@@ -719,70 +719,22 @@
                     </p>
                 </div>
             </section>
+            <div class="view-switcher shell">
+                <nav class="primary-nav" id="primary-navigation" aria-label="Event view">
+                    <button class="nav-link active" type="button" data-target="home" aria-controls="home" aria-pressed="true">Upcoming events</button>
+                    <button class="nav-link" type="button" data-target="past" aria-controls="past" aria-pressed="false">Past events</button>
+                </nav>
+            </div>
             <section id="home" class="page-content home-page shell" aria-labelledby="upcoming-heading">
-                <div class="view-switcher">
-                    <nav class="primary-nav" id="primary-navigation" aria-label="Event view">
-                        <button class="nav-link active" type="button" data-target="home" aria-controls="home" aria-pressed="true">Upcoming events</button>
-                        <button class="nav-link" type="button" data-target="past" aria-controls="past" aria-pressed="false">Past events</button>
-                    </nav>
-                </div>
                 <header class="section-header">
                     <div>
                         <p class="eyebrow dark"><span></span>Schedule</p>
                         <h2 id="upcoming-heading">Upcoming Events</h2>
                     </div>
                 </header>
-                <div class="calendar-mount" data-calendar="upcoming" data-calendar-start="2026-09" aria-label="Upcoming events calendar"></div>
+                <div class="calendar-mount" data-calendar="upcoming" data-calendar-scope="home" aria-label="Upcoming events calendar"></div>
                
                 <!-- UPCOMING EVENTS SECTION -->
-                    <article class="seminar upcoming-seminar">
-                        <h2 class="seminar-title">
-                            Unbounded solutions to the 2d incompressible Euler equation
-                        </h2>
-                        <dl class="meta-info">
-                            <div class="meta-item">
-                                <dt>Speaker:</dt>
-                                <dd>Herbert Koch (Professor @ BU - Bonn University)</dd>
-                            </div>
-                            <div class="meta-item">
-                                <dt>Date:</dt>
-                                <dd>Sep 3, 2026</dd>
-                            </div>
-                            <div class="meta-item">
-                                <dt>Time:</dt>
-                                <dd>9:00am - 9:45am</dd>
-                            </div>
-                            <div class="meta-item">
-                                <dt>Place:</dt>
-                                <dd>Room 114</dd>
-                            </div>
-                        </dl>
-                        <section class="description">
-                            <p>
-                                In this talk, we study unbounded solutions of the 2D incompressible
-                                Euler equations. One of the motivating factors for this is that the
-                                usual functional framework for the Euler equations (e.g. based on
-                                finite energy conditions, such as L^2) does not respect some of the
-                                symmetries of the problem, such as Galileo invariance.<br>
-                                
-                                The first result, global existence and uniqueness of solutions for
-                                initial data with square-root growth O(|x|^{1/2 - }) and bounded
-                                vorticity, is based on two key ingredients. Firstly an integral
-                                decomposition of the pressure, and secondly examining local energy
-                                balance leading to solution estimates in weighted $L^2$ spaces. We
-                                also prove continuity of the initial data to solution map by a
-                                substantial adaptation of Yudovich's uniqueness argument.<br>
-                                
-                                The second result is global existence and uniqueness of solutions
-                                for initial data with sublinear growth O(|x|^{1-}). Here the
-                                Galileo symmetry plays an essential role, since the Leray
-                                projection is not available anymore.<br>
-                                
-                                This is joint work with Dimitri Cobb. The first part recently appeared
-                                online in ARMA, the second part is work in progress.
-                            </p>
-                        </section>
-                    </article>
                 <article class="seminar upcoming-seminar">
                         <h2 class="seminar-title">
                             Quantitative Closure Analysis toward Ideal Fluids
@@ -934,19 +886,74 @@
             <!-- PAST EVENTS SECTION -->
             <section id="past" class="page-content past-page shell" aria-labelledby="past-heading" hidden>
                 <header class="section-header">
-                    <h2 id="past-heading">Past Events</h2>
-                    <button class="past-return" type="button" data-target="home">← Upcoming Events</button>
+                    <div>
+                        <p class="eyebrow dark"><span></span>Archive</p>
+                        <h2 id="past-heading">Past Events</h2>
+                    </div>
                 </header>
                 <div class="sub-nav-bar">
+                    <button type="button" data-target="past-fall2026" aria-controls="past-fall2026" aria-pressed="true">
+                        Fall Semester 2026-2027
+                    </button>
+                    <button type="button" data-target="past-spring2026" aria-controls="past-spring2026" aria-pressed="false">
+                        Spring Semester 2026
+                    </button>
                     <button type="button" data-target="past-fall2025" aria-controls="past-fall2025" aria-pressed="false">
                         Fall Semester 2025-2026
                     </button>
-                    <button type="button" data-target="past-spring2026" aria-controls="past-spring2026" aria-pressed="true">
-                        Spring Semester 2026
-                    </button>
                 </div>
-                <div class="calendar-mount" data-calendar="past" aria-label="Past events calendar"></div>
-                <section id="past-fall2025" class="sub-page-content semester-section" hidden>
+                <div class="calendar-mount" data-calendar="past" data-calendar-scope="past-fall2026" aria-label="Past events calendar"></div>
+                <section id="past-fall2026" class="sub-page-content semester-section" data-calendar-start="2026-09">
+                    <article class="seminar past-seminar">
+                        <h2 class="seminar-title">
+                            Unbounded solutions to the 2d incompressible Euler equation
+                        </h2>
+                        <dl class="meta-info">
+                            <div class="meta-item">
+                                <dt>Speaker:</dt>
+                                <dd>Herbert Koch (Professor @ BU - Bonn University)</dd>
+                            </div>
+                            <div class="meta-item">
+                                <dt>Date:</dt>
+                                <dd>Sep 3, 2026</dd>
+                            </div>
+                            <div class="meta-item">
+                                <dt>Time:</dt>
+                                <dd>9:00am - 9:45am</dd>
+                            </div>
+                            <div class="meta-item">
+                                <dt>Place:</dt>
+                                <dd>Room 114</dd>
+                            </div>
+                        </dl>
+                        <section class="description">
+                            <p>
+                                In this talk, we study unbounded solutions of the 2D incompressible
+                                Euler equations. One of the motivating factors for this is that the
+                                usual functional framework for the Euler equations (e.g. based on
+                                finite energy conditions, such as L^2) does not respect some of the
+                                symmetries of the problem, such as Galileo invariance.<br>
+
+                                The first result, global existence and uniqueness of solutions for
+                                initial data with square-root growth O(|x|^{1/2 - }) and bounded
+                                vorticity, is based on two key ingredients. Firstly an integral
+                                decomposition of the pressure, and secondly examining local energy
+                                balance leading to solution estimates in weighted $L^2$ spaces. We
+                                also prove continuity of the initial data to solution map by a
+                                substantial adaptation of Yudovich's uniqueness argument.<br>
+
+                                The second result is global existence and uniqueness of solutions
+                                for initial data with sublinear growth O(|x|^{1-}). Here the
+                                Galileo symmetry plays an essential role, since the Leray
+                                projection is not available anymore.<br>
+
+                                This is joint work with Dimitri Cobb. The first part recently appeared
+                                online in ARMA, the second part is work in progress.
+                            </p>
+                        </section>
+                    </article>
+                </section>
+                <section id="past-fall2025" class="sub-page-content semester-section" data-calendar-start="2025-09" hidden>
                     <article class="seminar past-seminar">
                         <h2 class="seminar-title">
                             Random attractors for SDEs
@@ -1614,7 +1621,7 @@
                     </article>
                     <!-- Fall Semester 2025-2026结束位置 -->
                 </section>
-                <section id="past-spring2026" class="sub-page-content semester-section">
+                <section id="past-spring2026" class="sub-page-content semester-section" data-calendar-start="2026-04" hidden>
                     <article class="seminar past-seminar">
                         <h2 class="seminar-title">
                             Partially dissipative hyperbolic systems with time-dependent damping
@@ -2537,7 +2544,7 @@
                     button.addEventListener('click', () => showSubPage(button.dataset.target));
                 });
                 showPage('home');
-                showSubPage('past-spring2026');
+                showSubPage('past-fall2026');
                 initBackToTop();
             });
         </script>

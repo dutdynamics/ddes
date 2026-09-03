@@ -1552,18 +1552,8 @@ button { margin: 0; }
 
 .home-page { border-top: 0; }
 .past-page { border-top: 0; }
-.home-page .section-header { grid-template-columns: 1fr; }
-
-body.viewing-past .hero,
-body.viewing-past .intro-panel { display: none; }
-
-body.viewing-past .site-main { padding-top: 0; }
-body.viewing-past .past-page { padding-top: 46px; }
-body.viewing-past .past-page .section-header {
-  grid-template-columns: 1fr auto;
-  align-items: center;
-  margin-bottom: 30px;
-}
+.home-page .section-header,
+.past-page .section-header { grid-template-columns: 1fr; }
 
 .section-header {
   display: grid;
@@ -2008,8 +1998,6 @@ body.viewing-past .past-page .section-header {
   .calendar-day { min-height: 66px; padding: 8px; }
   .calendar-day.has-events > button { min-height: 64px; padding: 8px; }
   .footer-grid { grid-template-columns: 1.4fr 1.2fr; }
-  body.viewing-past .site-main { padding-top: 0; }
-  body.viewing-past .past-page .section-header { grid-template-columns: 1fr auto; }
 }
 
 @media (max-width: 640px) {
@@ -2023,8 +2011,6 @@ body.viewing-past .past-page .section-header {
   .section-header { margin-bottom: 28px; padding-bottom: 26px; }
   .section-header h2 { font-size: clamp(2.65rem, 13vw, 3.8rem); }
   .section-header > p { padding-left: 17px; }
-  body.viewing-past .past-page .section-header { grid-template-columns: 1fr; }
-  .past-return { justify-self: start; }
   .sub-nav-bar { width: 100%; display: grid; grid-template-columns: 1fr; }
   .sub-nav-bar button { width: 100%; }
   .calendar-toolbar { min-height: 78px; padding: 17px 15px; }
