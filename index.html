@@ -725,14 +725,21 @@
                     <button class="nav-link" type="button" data-target="past" aria-controls="past" aria-pressed="false">Past events</button>
                 </nav>
             </div>
-            <section id="home" class="page-content home-page shell" aria-labelledby="upcoming-heading">
+            <section class="schedule-overview shell" aria-labelledby="events-heading">
                 <header class="section-header">
                     <div>
                         <p class="eyebrow dark"><span></span>Schedule</p>
-                        <h2 id="upcoming-heading">Upcoming Events</h2>
+                        <h2 id="events-heading">Upcoming Events</h2>
                     </div>
                 </header>
-                <div class="calendar-mount" data-calendar="upcoming" data-calendar-scope="home" aria-label="Upcoming events calendar"></div>
+                <div class="sub-nav-bar" id="semester-navigation" hidden>
+                    <button type="button" data-target="past-fall2026" aria-controls="past-fall2026" aria-pressed="true">Fall Semester 2026-2027</button>
+                    <button type="button" data-target="past-spring2026" aria-controls="past-spring2026" aria-pressed="false">Spring Semester 2026</button>
+                    <button type="button" data-target="past-fall2025" aria-controls="past-fall2025" aria-pressed="false">Fall Semester 2025-2026</button>
+                </div>
+                <div class="calendar-mount" data-calendar="all" aria-label="All seminar events calendar"></div>
+            </section>
+            <section id="home" class="page-content home-page shell" aria-labelledby="events-heading">
                
                 <!-- UPCOMING EVENTS SECTION -->
                 <article class="seminar upcoming-seminar">
@@ -884,25 +891,7 @@
                 <!-- 将来事件结束位置 -->
             </section>
             <!-- PAST EVENTS SECTION -->
-            <section id="past" class="page-content past-page shell" aria-labelledby="past-heading" hidden>
-                <header class="section-header">
-                    <div>
-                        <p class="eyebrow dark"><span></span>Archive</p>
-                        <h2 id="past-heading">Past Events</h2>
-                    </div>
-                </header>
-                <div class="sub-nav-bar">
-                    <button type="button" data-target="past-fall2026" aria-controls="past-fall2026" aria-pressed="true">
-                        Fall Semester 2026-2027
-                    </button>
-                    <button type="button" data-target="past-spring2026" aria-controls="past-spring2026" aria-pressed="false">
-                        Spring Semester 2026
-                    </button>
-                    <button type="button" data-target="past-fall2025" aria-controls="past-fall2025" aria-pressed="false">
-                        Fall Semester 2025-2026
-                    </button>
-                </div>
-                <div class="calendar-mount" data-calendar="past" data-calendar-scope="past-fall2026" aria-label="Past events calendar"></div>
+            <section id="past" class="page-content past-page shell" aria-labelledby="events-heading" hidden>
                 <section id="past-fall2026" class="sub-page-content semester-section" data-calendar-start="2026-09">
                     <article class="seminar past-seminar">
                         <h2 class="seminar-title">

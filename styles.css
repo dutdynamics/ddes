@@ -1807,6 +1807,32 @@ button { margin: 0; }
 
 .semester-section { display: block; }
 
+/* One persistent calendar for both event lists. */
+.schedule-overview { padding-top: 48px; }
+.schedule-overview .section-header { grid-template-columns: 1fr; }
+.site-main .page-content { padding-top: 0; }
+.calendar-day.event-past { --event-fill: #dce3e8; --event-edge: #91a2ae; }
+.calendar-day.event-soon { --event-fill: #ffdf73; --event-edge: #ffc400; }
+.calendar-day.event-future { --event-fill: #c9edf3; --event-edge: #61b8cf; }
+.calendar-day.has-events {
+  background: var(--event-fill);
+  border-color: var(--event-edge);
+  box-shadow: inset 0 -3px 0 var(--event-edge);
+}
+.calendar-day.has-events > button:hover { background: rgba(255,255,255,.24); }
+.calendar-state-label { color: #173c55; font-size: .57rem; line-height: 1.2; font-weight: 600; }
+.calendar-legend .key-past i { background: #dce3e8; }
+.calendar-legend .key-soon i { background: #ffdf73; }
+.calendar-legend .key-future i { background: #c9edf3; }
+.calendar-legend { color: #d7e3ee; }
+.calendar-agenda-link[data-event-status="past"] { border-left: 4px solid #91a2ae; }
+.calendar-agenda-link[data-event-status="soon"] { border-left: 4px solid #ffc400; }
+.calendar-agenda-link[data-event-status="future"] { border-left: 4px solid #61b8cf; }
+@media (max-width: 640px) {
+  .schedule-overview { padding-top: 38px; }
+  .calendar-state-label { font-size: .46rem; overflow-wrap: anywhere; }
+}
+
 .seminar {
   position: relative;
   isolation: isolate;

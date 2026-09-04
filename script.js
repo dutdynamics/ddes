@@ -11,6 +11,7 @@
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   let sharedPastCalendar = null;
   let sharedPastCalendarController = null;
+  let upcomingStartMonth = '';
 
   function closeMenu() {
     const toggle = document.querySelector('.menu-toggle');
@@ -21,7 +22,7 @@
     document.body.classList.remove('menu-open');
   }
 
-  function setPage(pageId, shouldScroll = false) {
+  function setPage(pageId, shouldScroll = false, syncCalendarMonth = true) {
     const destination = document.getElementById(pageId);
     if (!destination || !destination.classList.contains('page-content')) return;
 
@@ -33,6 +34,15 @@
       button.classList.toggle('active', active);
       button.setAttribute('aria-pressed', String(active));
     });
+    document.getElementById('events-heading').textContent = pageId === 'past' ? 'Past Events' : 'Upcoming Events';
+    document.getElementById('semester-navigation').hidden = pageId !== 'past';
+    if (syncCalendarMonth) {
+      if (pageId === 'home') sharedPastCalendarController?.showMonth(upcomingStartMonth);
+      else {
+        const semester = document.querySelector('#past .semester-section:not([hidden])');
+        if (semester) setSharedPastCalendarMonth(semester.id);
+      }
+    }
 
     closeMenu();
     if (shouldScroll) {
@@ -150,7 +160,7 @@
     if (!event?.card) return;
     const card = event.card;
     const parentPage = card.closest('.page-content');
-    if (parentPage) setPage(parentPage.id, false);
+    if (parentPage) setPage(parentPage.id, false, false);
 
     const semester = card.closest('.sub-page-content');
     if (semester) setSubPage(semester.id, false);
@@ -167,7 +177,32 @@
     });
   }
 
-  function createCalendar(mount, events, mode) {
+  // Interpret event times in Dalian's timezone, independently of the visitor's timezone.
+  function eventTime(event, date, useEnd = false) {
+    const item = [...event.card.querySelectorAll('.meta-item')].find(node => node.querySelector('dt')?.textContent.trim().toLowerCase().startsWith('time'));
+    const text = item?.querySelector('dd')?.textContent.toLowerCase() || '';
+    const parts = text.replace(/[–—]/g, '-').split('-');
+    const value = useEnd ? (parts[1] || '') : parts[0];
+    const match = value.trim().match(/^(\d{1,2})(?::(\d{2}))?\s*(am|pm)?$/);
+    let hour = useEnd ? 23 : 0;
+    let minute = useEnd ? 59 : 0;
+    if (match) {
+      hour = Number(match[1]);
+      minute = Number(match[2] || 0);
+      const meridiem = match[3] || text.match(/(am|pm)\s*$/)?.[1];
+      if (meridiem) hour = hour % 12 + (meridiem === 'pm' ? 12 : 0);
+      if (hour > 23 || minute > 59) { hour = useEnd ? 23 : 0; minute = useEnd ? 59 : 0; }
+    }
+    return Date.parse(`${dateKey(date)}T${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}:00+08:00`);
+  }
+
+  function eventStatus(event, date, now = Date.now()) {
+    if (eventTime(event, date, true) <= now) return 'past';
+    if (eventTime(event, date) <= now + 7 * 24 * 60 * 60 * 1000) return 'soon';
+    return 'future';
+  }
+
+  function createCalendar(mount, events) {
     const eventMap = new Map();
     const allDates = [];
     events.forEach(event => {
@@ -178,8 +213,13 @@
         eventMap.get(key).push(event);
       });
     });
+    eventMap.forEach((dayEvents, key) => {
+      const date = new Date(`${key}T12:00:00`);
+      dayEvents.sort((a, b) => eventTime(a, date) - eventTime(b, date));
+    });
 
-    const now = new Date();
+    let now = new Date();
+    let selectedKey = null;
     const configuredStart = mount.dataset.calendarStart?.match(/^(\d{4})-(\d{2})$/);
     const initialMonth = configuredStart
       ? new Date(Number(configuredStart[1]), Number(configuredStart[2]) - 1, 1, 12)
@@ -199,7 +239,7 @@
       <div class="calendar-panel">
         <div class="calendar-toolbar">
           <div class="calendar-title-wrap">
-            <span class="calendar-kicker">${mode === 'past' ? 'Event archive' : 'Seminar calendar'}</span>
+            <span class="calendar-kicker">All seminars · Dalian time (UTC+8)</span>
             <h3 class="calendar-title" aria-live="polite"></h3>
           </div>
           <div class="calendar-controls">
@@ -209,7 +249,7 @@
         </div>
         <div class="calendar-weekdays" aria-hidden="true">${weekdayNames.map(day => `<span>${day}</span>`).join('')}</div>
         <div class="calendar-grid" role="grid"></div>
-        <div class="calendar-legend"><span class="event-key"><i></i>Event date</span><span><i></i>No event</span></div>
+        <div class="calendar-legend"><span class="key-past"><i></i>Ended</span><span class="key-soon"><i></i>Within 7 days</span><span class="key-future"><i></i>Future</span><span><i></i>No event</span></div>
         <div class="calendar-agenda" aria-live="polite"></div>
       </div>`;
 
@@ -229,7 +269,7 @@
       if (!dayEvents.length) {
         const empty = document.createElement('p');
         empty.className = 'calendar-agenda-empty';
-        empty.textContent = `Gray dates have no ${mode === 'past' ? 'archived' : 'upcoming'} event. Use the arrows to browse other months.`;
+        empty.textContent = 'Select an event date to jump to its first report.';
         agenda.append(empty);
         return;
       }
@@ -240,7 +280,9 @@
         const button = document.createElement('button');
         button.type = 'button';
         button.className = 'calendar-agenda-link';
-        button.textContent = event.title;
+        const state = eventStatus(event, date || event.dates[0]);
+        button.dataset.eventStatus = state;
+        button.textContent = `${{ past: 'Ended', soon: 'Within 7 days', future: 'Future' }[state]} · ${event.title}`;
         button.addEventListener('click', () => focusEvent(event));
         links.append(button);
       });
@@ -248,6 +290,8 @@
     }
 
     function render() {
+      const focusedDate = document.activeElement?.dataset.calendarDate;
+      now = new Date();
       title.textContent = `${monthNames[anchor.getMonth()]} ${anchor.getFullYear()}`;
       previousButton.disabled = Boolean(minimumMonth && anchor <= minimumMonth);
       grid.replaceChildren();
@@ -263,8 +307,10 @@
         const dayEvents = eventMap.get(key) || [];
         const cell = document.createElement('div');
         const inMonth = date.getMonth() === anchor.getMonth();
-        const isToday = key === dateKey(now);
-        cell.className = `calendar-day${inMonth ? '' : ' outside-month'}${isToday ? ' today' : ''}${dayEvents.length ? ' has-events' : ''}`;
+        const isToday = key === new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Shanghai', year: 'numeric', month: '2-digit', day: '2-digit' }).format(now);
+        const states = [...new Set(dayEvents.map(event => eventStatus(event, date, now.getTime())))];
+        const dominant = states.includes('soon') ? 'soon' : states.includes('future') ? 'future' : 'past';
+        cell.className = `calendar-day${inMonth ? '' : ' outside-month'}${isToday ? ' today' : ''}${dayEvents.length ? ` has-events event-${dominant}` : ''}${key === selectedKey ? ' is-selected' : ''}`;
         cell.setAttribute('role', 'gridcell');
 
         if (dayEvents.length) {
@@ -278,10 +324,15 @@
           const status = document.createElement('span');
           status.className = 'calendar-day-status';
           status.textContent = dayEvents.length === 1 ? '1 event' : `${dayEvents.length} events`;
-          button.append(number, status);
+          const stateLabel = document.createElement('span');
+          stateLabel.className = 'calendar-state-label';
+          stateLabel.textContent = states.map(state => ({past: 'Ended', soon: 'Soon', future: 'Future'}[state])).join(' / ');
+          button.setAttribute('aria-label', `${button.getAttribute('aria-label')}; ${stateLabel.textContent}`);
+          button.append(number, status, stateLabel);
           button.addEventListener('click', () => {
             grid.querySelectorAll('.calendar-day.is-selected').forEach(item => item.classList.remove('is-selected'));
             cell.classList.add('is-selected');
+            selectedKey = key;
             renderAgenda(dayEvents, date);
             focusEvent(dayEvents[0]);
           });
@@ -299,7 +350,9 @@
         grid.append(cell);
       }
 
-      renderAgenda();
+      const selectedDate = selectedKey ? new Date(`${selectedKey}T12:00:00`) : null;
+      renderAgenda(eventMap.get(selectedKey) || [], selectedDate);
+      if (focusedDate) grid.querySelector(`[data-calendar-date="${focusedDate}"]`)?.focus({ preventScroll: true });
     }
 
     previousButton.addEventListener('click', () => {
@@ -313,11 +366,14 @@
     });
 
     render();
+    window.setInterval(render, 60000);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) render(); });
     return {
       showMonth(value) {
         const requestedMonth = value?.match(/^(\d{4})-(\d{2})$/);
         if (!requestedMonth) return;
         anchor = new Date(Number(requestedMonth[1]), Number(requestedMonth[2]) - 1, 1, 12);
+        selectedKey = null;
         render();
       }
     };
@@ -332,26 +388,13 @@
 
   function initCalendars() {
     const usedIds = new Set([...document.querySelectorAll('[id]')].map(node => node.id));
-    const allEvents = [];
-
-    const upcomingCalendar = document.querySelector('[data-calendar="upcoming"]');
-    if (upcomingCalendar) {
-      const scope = document.getElementById(upcomingCalendar.dataset.calendarScope || 'home');
-      const events = collectEvents(scope, usedIds);
-      createCalendar(upcomingCalendar, events, 'upcoming');
-      allEvents.push(...events);
-    }
-
-    sharedPastCalendar = document.querySelector('[data-calendar="past"]');
-    const semesterSections = [...document.querySelectorAll('#past .semester-section')];
-    const activeSemester = semesterSections.find(scope => !scope.hidden) || semesterSections[0];
-    const pastEvents = collectEvents(document.getElementById('past'), usedIds);
-    allEvents.push(...pastEvents);
-
-    if (sharedPastCalendar && activeSemester) {
-      sharedPastCalendar.dataset.calendarScope = activeSemester.id;
-      sharedPastCalendar.dataset.calendarStart = activeSemester.dataset.calendarStart || '';
-      sharedPastCalendarController = createCalendar(sharedPastCalendar, pastEvents, 'past');
+    const allEvents = collectEvents(document.getElementById('main-content'), usedIds);
+    const upcomingDates = allEvents.flatMap(event => event.dates.filter(date => eventStatus(event, date) !== 'past')).sort((a, b) => a - b);
+    upcomingStartMonth = dateKey(upcomingDates[0] || new Date()).slice(0, 7);
+    sharedPastCalendar = document.querySelector('[data-calendar="all"]');
+    if (sharedPastCalendar) {
+      sharedPastCalendar.dataset.calendarStart = upcomingStartMonth;
+      sharedPastCalendarController = createCalendar(sharedPastCalendar, allEvents);
     }
 
     return allEvents;
