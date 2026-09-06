@@ -9,3 +9,7 @@ This repository contains the webpage for the DUT Differential Equations Seminar.
 ## Usage
 
 Open `index_redesign.html` in a browser.
+
+## Website
+
+GitHub Pages publishes the main branch at https://dutdynamics.github.io/ddes/
