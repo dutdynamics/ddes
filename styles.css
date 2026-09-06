@@ -1820,17 +1820,17 @@ button { margin: 0; }
   box-shadow: inset 0 -3px 0 var(--event-edge);
 }
 .calendar-day.has-events > button:hover { background: rgba(255,255,255,.24); }
-.calendar-state-label { color: #173c55; font-size: .57rem; line-height: 1.2; font-weight: 600; }
+.calendar-state-label { color: #173c55; font-size: .66rem; line-height: 1.25; font-weight: 650; letter-spacing: .01em; }
 .calendar-legend .key-past i { background: #dce3e8; }
 .calendar-legend .key-soon i { background: #ffdf73; }
 .calendar-legend .key-future i { background: #c9edf3; }
-.calendar-legend { color: #d7e3ee; }
+.calendar-legend { color: #d7e3ee; font-size: .65rem; }
 .calendar-agenda-link[data-event-status="past"] { border-left: 4px solid #91a2ae; }
 .calendar-agenda-link[data-event-status="soon"] { border-left: 4px solid #ffc400; }
 .calendar-agenda-link[data-event-status="future"] { border-left: 4px solid #61b8cf; }
 @media (max-width: 640px) {
   .schedule-overview { padding-top: 38px; }
-  .calendar-state-label { font-size: .46rem; overflow-wrap: anywhere; }
+  .calendar-state-label { font-size: .5rem; letter-spacing: -.015em; white-space: nowrap; }
 }
 
 .seminar {

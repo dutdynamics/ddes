@@ -249,7 +249,7 @@
         </div>
         <div class="calendar-weekdays" aria-hidden="true">${weekdayNames.map(day => `<span>${day}</span>`).join('')}</div>
         <div class="calendar-grid" role="grid"></div>
-        <div class="calendar-legend"><span class="key-past"><i></i>Ended</span><span class="key-soon"><i></i>Within 7 days</span><span class="key-future"><i></i>Future</span><span><i></i>No event</span></div>
+        <div class="calendar-legend"><span class="key-past"><i></i>Past</span><span class="key-soon"><i></i>Upcoming</span><span class="key-future"><i></i>Schedule</span><span><i></i>No event</span></div>
         <div class="calendar-agenda" aria-live="polite"></div>
       </div>`;
 
@@ -282,7 +282,7 @@
         button.className = 'calendar-agenda-link';
         const state = eventStatus(event, date || event.dates[0]);
         button.dataset.eventStatus = state;
-        button.textContent = `${{ past: 'Ended', soon: 'Within 7 days', future: 'Future' }[state]} · ${event.title}`;
+        button.textContent = `${{ past: 'Past', soon: 'Upcoming', future: 'Schedule' }[state]} · ${event.title}`;
         button.addEventListener('click', () => focusEvent(event));
         links.append(button);
       });
@@ -326,7 +326,7 @@
           status.textContent = dayEvents.length === 1 ? '1 event' : `${dayEvents.length} events`;
           const stateLabel = document.createElement('span');
           stateLabel.className = 'calendar-state-label';
-          stateLabel.textContent = states.map(state => ({past: 'Ended', soon: 'Soon', future: 'Future'}[state])).join(' / ');
+          stateLabel.textContent = states.map(state => ({past: 'Past', soon: 'Upcoming', future: 'Schedule'}[state])).join(' / ');
           button.setAttribute('aria-label', `${button.getAttribute('aria-label')}; ${stateLabel.textContent}`);
           button.append(number, status, stateLabel);
           button.addEventListener('click', () => {
