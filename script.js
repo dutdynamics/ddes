@@ -3,6 +3,10 @@
 
   const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
   const weekdayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  // The seminar's regular weekly slot is Thursday. Highlight only that slot.
+  const publicHolidayOn = key => new Date(`${key}T12:00:00Z`).getUTCDay() === 4
+    ? (window.DDES_HOLIDAYS || []).find(holiday => holiday.start <= key && key <= holiday.end)
+    : undefined;
   const monthIndex = new Map([
     ['jan', 0], ['feb', 1], ['mar', 2], ['apr', 3], ['may', 4], ['jun', 5],
     ['jul', 6], ['aug', 7], ['sep', 8], ['oct', 9], ['nov', 10], ['dec', 11]
@@ -249,7 +253,7 @@
         </div>
         <div class="calendar-weekdays" aria-hidden="true">${weekdayNames.map(day => `<span>${day}</span>`).join('')}</div>
         <div class="calendar-grid" role="grid"></div>
-        <div class="calendar-legend"><span class="key-past"><i></i>Past</span><span class="key-soon"><i></i>Upcoming</span><span class="key-future"><i></i>Schedule</span><span><i></i>No event</span></div>
+        <div class="calendar-legend"><span class="key-past"><i></i>Past</span><span class="key-soon"><i></i>Upcoming</span><span class="key-future"><i></i>Scheduled</span><span class="key-holiday"><i></i>Public holiday</span><span><i></i>No event</span></div>
         <div class="calendar-agenda" aria-live="polite"></div>
       </div>`;
 
@@ -265,6 +269,15 @@
       label.className = 'calendar-agenda-label';
       label.textContent = date ? new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(date) : 'Selected date';
       agenda.append(label);
+
+      const holiday = date && publicHolidayOn(dateKey(date));
+      if (holiday) {
+        const notice = document.createElement('p');
+        notice.className = 'calendar-holiday-notice';
+        notice.textContent = 'Public holiday';
+        agenda.append(notice);
+        if (!dayEvents.length) return;
+      }
 
       if (!dayEvents.length) {
         const empty = document.createElement('p');
@@ -282,7 +295,7 @@
         button.className = 'calendar-agenda-link';
         const state = eventStatus(event, date || event.dates[0]);
         button.dataset.eventStatus = state;
-        button.textContent = `${{ past: 'Past', soon: 'Upcoming', future: 'Schedule' }[state]} · ${event.title}`;
+        button.textContent = `${{ past: 'Past', soon: 'Upcoming', future: 'Scheduled' }[state]} · ${event.title}`;
         button.addEventListener('click', () => focusEvent(event));
         links.append(button);
       });
@@ -305,15 +318,17 @@
         date.setDate(start.getDate() + index);
         const key = dateKey(date);
         const dayEvents = eventMap.get(key) || [];
+        const holiday = publicHolidayOn(key);
         const cell = document.createElement('div');
         const inMonth = date.getMonth() === anchor.getMonth();
         const isToday = key === new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Shanghai', year: 'numeric', month: '2-digit', day: '2-digit' }).format(now);
         const states = [...new Set(dayEvents.map(event => eventStatus(event, date, now.getTime())))];
         const dominant = states.includes('soon') ? 'soon' : states.includes('future') ? 'future' : 'past';
-        cell.className = `calendar-day${inMonth ? '' : ' outside-month'}${isToday ? ' today' : ''}${dayEvents.length ? ` has-events event-${dominant}` : ''}${key === selectedKey ? ' is-selected' : ''}`;
+        cell.className = `calendar-day${inMonth ? '' : ' outside-month'}${isToday ? ' today' : ''}${dayEvents.length ? ` has-events event-${dominant}` : ''}${holiday ? ' public-holiday' : ''}${key === selectedKey ? ' is-selected' : ''}`;
         cell.setAttribute('role', 'gridcell');
+        cell.dataset.date = key;
 
-        if (dayEvents.length) {
+        if (dayEvents.length || holiday) {
           const button = document.createElement('button');
           button.type = 'button';
           button.dataset.calendarDate = key;
@@ -323,10 +338,10 @@
           number.textContent = date.getDate();
           const status = document.createElement('span');
           status.className = 'calendar-day-status';
-          status.textContent = dayEvents.length === 1 ? '1 event' : `${dayEvents.length} events`;
+          status.textContent = dayEvents.length ? (dayEvents.length === 1 ? '1 event' : `${dayEvents.length} events`) : '';
           const stateLabel = document.createElement('span');
           stateLabel.className = 'calendar-state-label';
-          stateLabel.textContent = states.map(state => ({past: 'Past', soon: 'Upcoming', future: 'Schedule'}[state])).join(' / ');
+          stateLabel.textContent = holiday ? 'Public holiday' : states.map(state => ({past: 'Past', soon: 'Upcoming', future: 'Scheduled'}[state])).join(' / ');
           button.setAttribute('aria-label', `${button.getAttribute('aria-label')}; ${stateLabel.textContent}`);
           button.append(number, status, stateLabel);
           button.addEventListener('click', () => {
@@ -334,7 +349,7 @@
             cell.classList.add('is-selected');
             selectedKey = key;
             renderAgenda(dayEvents, date);
-            focusEvent(dayEvents[0]);
+            if (!holiday) focusEvent(dayEvents[0]);
           });
           cell.append(button);
         } else {
