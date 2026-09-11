@@ -1,6 +1,6 @@
 # DDES
 
-Last updated: 2026-09-10 (UTC+8).
+Last updated: 2026-09-11 (UTC+8).
 
 DUT Differential Equations Seminar
 
@@ -43,3 +43,27 @@ reachable; a holiday does not silently cancel or reschedule a report.
 - Follow-up cadence: check official DUT notices every two weeks; remind the
   organizer each Monday to submit the latest Time Plan export or screenshot.
   These follow-ups run in the Codex desktop task, not in GitHub Pages.
+
+### Friday archive check (2026-09-11)
+
+The existing Codex desktop follow-up also checks ended reports every Friday at
+09:00 Beijing time. It syncs the latest repository, runs the archive program,
+reviews the changes and publishes them through a pull request. The computer and
+Codex app must be running for this local scheduled task. If no report has ended,
+no commit is created.
+
+Run `python scripts/archive_events.py` to preview eligible reports, then add
+`--write` to move them from Upcoming Events into the matching Past Events
+semester. The program preserves each card's HTML, title, abstract, speaker,
+location and ID, changing only its upcoming/past class. Existing shared calendar
+styles continue to apply. Missing semester sections and navigation buttons are
+created automatically (fall: September–January; spring: February–August).
+
+Reports become eligible at their end time in UTC+8. Multi-day reports wait for
+the final day's end time. Missing or invalid end times wait until the next day;
+unrecognized dates are left untouched and printed for review. Repeated runs do
+not duplicate reports. Structural HTML errors stop the operation before writing.
+
+For a reproducible preview, use
+`python scripts/archive_events.py --now 2026-09-11T09:00:00+08:00`.
+Run the checks with `python -m unittest discover -s scripts -p 'test_*.py'`.
