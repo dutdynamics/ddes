@@ -162,13 +162,16 @@ def archive(source, now):
     newline = '\r\n' if '\r\n' in source else '\n'
     new_sections, new_buttons = [], []
     for (identity, label, month), cards in sorted(groups.items(), reverse=True):
-        cards.sort(key=lambda item: item[0], reverse=True)
+        cards.sort(key=lambda item: item[0])
         block = ''.join(newline + '                    ' + html for _, html in cards)
         targets = [node for node in past.children if node.attrs.get('id') == identity]
         if targets:
             if len(targets) != 1:
                 raise ValueError(f'Duplicate archive section: {identity}')
-            edits.append((targets[0].opening_end, targets[0].opening_end, block))
+            # Keep existing reports above the newly archived batch.
+            existing = [node for node in targets[0].children if node.tag == 'article']
+            insertion = existing[-1].end if existing else targets[0].opening_end
+            edits.append((insertion, insertion, block))
         else:
             new_sections.append(
                 f'{newline}                <section id="{identity}" class="sub-page-content semester-section" '

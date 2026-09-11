@@ -66,15 +66,26 @@ class ArchiveTests(unittest.TestCase):
             updated, _, _ = self.check_at(page(card(day)), instant + 'T09:00:00+08:00')
             self.assertEqual(Document(updated).by_id('keep-id').parent.attrs['id'], target)
 
-    def test_multiple_reports_preserved_and_newest_first(self):
+    def test_multiple_reports_preserved_and_oldest_first(self):
         older = card(title='Older').replace('keep-id', 'older')
         newer = card('Sep 11, 2026', title='Newer').replace('keep-id', 'newer')
         future = card('Sep 17, 2026', title='Future').replace('keep-id', 'future')
-        updated, moved, _ = self.check_at(page(older + newer + future), '2026-09-12T09:00:00+08:00')
+        updated, moved, _ = self.check_at(page(newer + older + future), '2026-09-12T09:00:00+08:00')
         self.assertEqual(len(moved), 2)
         doc = Document(updated)
         self.assertEqual(doc.by_id('future').parent.attrs['id'], 'home')
-        self.assertLess(doc.by_id('newer').start, doc.by_id('older').start)
+        self.assertLess(doc.by_id('older').start, doc.by_id('newer').start)
+
+    def test_new_archives_append_below_existing_reports(self):
+        existing = card('Sep 3, 2026').replace('keep-id', 'existing').replace('upcoming-seminar', 'past-seminar')
+        original = page(card()).replace('class="sub-page-content semester-section">',
+                                        'class="sub-page-content semester-section">' + existing)
+        updated, moved, _ = self.check_at(original, '2026-09-11T09:00:00+08:00')
+        doc = Document(updated)
+        self.assertEqual(len(moved), 1)
+        self.assertLess(doc.by_id('existing').start, doc.by_id('keep-id').start)
+        self.assertIn(existing, updated)
+        self.assertEqual(self.check_at(updated, '2026-09-11T09:00:00+08:00')[0], updated)
 
     def test_malformed_structure_fails_without_result(self):
         with self.assertRaises(ValueError):
