@@ -56,7 +56,9 @@ Run `python scripts/archive_events.py` to preview eligible reports, then add
 `--write` to move them from Upcoming Events into the matching Past Events
 semester. The program preserves each card's HTML, title, abstract, speaker,
 location and ID, changing only its upcoming/past class. Existing shared calendar
-styles continue to apply. Missing semester sections and navigation buttons are
+styles continue to apply. New archives are appended below existing reports;
+multiple reports in the same batch are added in ascending date order (older
+above, newer below). Missing semester sections and navigation buttons are
 created automatically (fall: September–January; spring: February–August).
 
 Reports become eligible at their end time in UTC+8. Multi-day reports wait for
