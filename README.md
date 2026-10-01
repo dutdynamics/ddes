@@ -84,3 +84,9 @@ Calendar and archive regression checks share the same date/time examples. Run
 
 Navigation uses one initializer. Report links open the corresponding semester
 and calendar month; malformed URL fragments do not interrupt the page.
+
+MathJax remains pinned to 4.0.0. Its speech-rule mathmaps use the same-version
+jsDelivr path because the original BootCDN resource URL fails to load. The
+[official loader options](https://docs.mathjax.org/en/v4.0/options/startup/loader.html)
+support configuring the mathmaps path separately. Formula startup and all 53
+rendered formulas were checked in the browser without loading errors.
