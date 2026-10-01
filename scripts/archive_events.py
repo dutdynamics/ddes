@@ -13,8 +13,11 @@ from pathlib import Path
 import re
 
 DALIAN = timezone(timedelta(hours=8))
-MONTHS = {name: i for i, name in enumerate(
-    ('jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'), 1)}
+MONTH_NAMES = ('january', 'february', 'march', 'april', 'may', 'june',
+               'july', 'august', 'september', 'october', 'november', 'december')
+MONTHS = {key: index for index, name in enumerate(MONTH_NAMES, 1)
+          for key in (name, name[:3])}
+MONTHS['sept'] = 9
 
 
 @dataclass
@@ -90,27 +93,78 @@ class Document(HTMLParser):
 
 
 def dates(raw):
-    match = re.fullmatch(r'([A-Za-z]+)\s+(\d{1,2})(?:\s*[-–—]\s*(\d{1,2}))?,\s*(\d{4})', raw.strip())
-    if not match or match[1][:3].lower() not in MONTHS:
+    value = ' '.join(raw.replace('\u2013', '-').replace('\u2014', '-').split())
+    iso = re.fullmatch(r'(\d{4})-(\d{2})-(\d{2})', value)
+    match = re.fullmatch(r'([A-Za-z]+)\s+(\d{1,2})(?:\s*-\s*(\d{1,2}))?,\s*(\d{4})', value)
+    if iso:
+        year, month, start, end = int(iso[1]), int(iso[2]), int(iso[3]), int(iso[3])
+    elif match and match[1].lower() in MONTHS:
+        month, year = MONTHS[match[1].lower()], int(match[4])
+        start, end = int(match[2]), int(match[3] or match[2])
+    else:
         raise ValueError(f'Unrecognized date: {raw!r}')
-    month, year = MONTHS[match[1][:3].lower()], int(match[4])
-    first = date(year, month, int(match[2]))
-    last = date(year, month, int(match[3] or match[2]))
+    if year < 1000:
+        raise ValueError(f'Invalid date: {raw!r}')
+    first, last = date(year, month, start), date(year, month, end)
     if last < first:
         raise ValueError(f'Reversed date range: {raw!r}')
     return first, last
 
 
+def clock_minutes(value, inherited_meridiem=''):
+    match = re.fullmatch(r'\s*(\d{1,2})(?::(\d{2}))?\s*(am|pm)?\s*', value)
+    if not match:
+        return None
+    hour, minute = int(match[1]), int(match[2] or 0)
+    meridiem = match[3] or inherited_meridiem
+    if minute > 59 or not (1 <= hour <= 12 if meridiem else 0 <= hour <= 23):
+        return None
+    if meridiem:
+        hour = hour % 12 + (12 if meridiem == 'pm' else 0)
+    return hour * 60 + minute
+
+
+def report_times(day, raw_time):
+    text = ' '.join(raw_time.lower().replace('\u2013', '-').replace('\u2014', '-').split())
+    clock = r'(\d{1,2}(?::\d{2})?\s*(?:am|pm)?)'
+    pattern = re.compile(r'(?:([a-z]+)\s+(\d{1,2}),?\s+)?' + clock + r'\s*-\s*' + clock)
+    matches = list(pattern.finditer(text))
+    if not matches:
+        return None
+    dated = any(match[1] for match in matches)
+    position, label, intervals = 0, None, []
+    for match in matches:
+        gap = text[position:match.start()].strip()
+        if (gap != '' if position == 0 else not re.fullmatch(r'(?:and|[,;/])?', gap)):
+            return None
+        position = match.end()
+        if match[1]:
+            month = MONTHS.get(match[1])
+            if month is None:
+                return None
+            try:
+                date(day.year, month, int(match[2]))
+            except ValueError:
+                return None
+            label = month, int(match[2])
+        if dated and label is None:
+            return None
+        meridiem = re.search(r'(am|pm)$', match[4])
+        start = clock_minutes(match[3], meridiem[1] if meridiem else '')
+        end = clock_minutes(match[4])
+        if start is None or end is None or end < start:
+            return None
+        if label is None or label == (day.month, day.day):
+            intervals.append((start, end))
+    if text[position:].strip() or not intervals:
+        return None
+    return min(item[0] for item in intervals), max(item[1] for item in intervals)
+
+
 def end_of_report(last, raw_time):
-    parts = re.split('[-–—]', raw_time.lower())
-    match = re.fullmatch(r'\s*(\d{1,2})(?::(\d{2}))?\s*(am|pm)?\s*', parts[1]) if len(parts) == 2 else None
-    if match:
-        hour, minute = int(match[1]), int(match[2] or 0)
-        meridiem = match[3]
-        if minute < 60 and (1 <= hour <= 12 if meridiem else 0 <= hour <= 23):
-            if meridiem:
-                hour = hour % 12 + (12 if meridiem == 'pm' else 0)
-            return datetime.combine(last, time(hour, minute), DALIAN)
+    times = report_times(last, raw_time)
+    if times is not None:
+        return datetime.combine(last, time.min, DALIAN) + timedelta(minutes=times[1])
     # Unknown/invalid time: wait until the entire final date has passed.
     return datetime.combine(last + timedelta(days=1), time.min, DALIAN)
 
@@ -144,7 +198,15 @@ def archive(source, now):
         html = source[card.start:card.end]
         # Change the class token only in the article's opening tag.
         opening = source[card.start:card.opening_end]
-        opening = re.sub(r'\bupcoming-seminar\b', 'past-seminar', opening)
+        def replace_class(match):
+            if match[1].lower() != 'class':
+                return match[0]
+            value = match[3]
+            quote = value[0] if value[0] in "\"'" else ''
+            tokens = value[1:-1] if quote else value
+            tokens = re.sub(r'(?<!\S)upcoming-seminar(?!\S)', 'past-seminar', tokens)
+            return match[1] + match[2] + quote + tokens + quote
+        opening = re.sub(r"([^\s=/>]+)(\s*=\s*)(\"[^\"]*\"|'[^']*'|[^\s>]+)", replace_class, opening)
         if not card.has_class('upcoming-seminar'):
             raise ValueError('An ended card lacks upcoming-seminar; no changes written.')
         html = opening + source[card.opening_end:card.end]

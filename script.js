@@ -7,10 +7,89 @@
   const publicHolidayOn = key => new Date(`${key}T12:00:00Z`).getUTCDay() === 4
     ? (window.DDES_HOLIDAYS || []).find(holiday => holiday.start <= key && key <= holiday.end)
     : undefined;
-  const monthIndex = new Map([
-    ['jan', 0], ['feb', 1], ['mar', 2], ['apr', 3], ['may', 4], ['jun', 5],
-    ['jul', 6], ['aug', 7], ['sep', 8], ['oct', 9], ['nov', 10], ['dec', 11]
-  ]);
+  const monthIndex = new Map(monthNames.flatMap((name, index) => [[name.toLowerCase(), index], [name.slice(0, 3).toLowerCase(), index]]));
+  monthIndex.set('sept', 8);
+
+  // Calendar dates are civil dates; report timestamps always use UTC+8.
+  function dateKey(date) {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  }
+
+  function dalianDateKey(now = new Date()) {
+    return new Date(now.getTime() + 8 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  }
+
+  function parseEventDates(rawValue) {
+    const value = (rawValue || '').replace(/[\u2013\u2014]/g, '-').replace(/\s+/g, ' ').trim();
+    const iso = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    const match = value.match(/^([A-Za-z]+)\s+(\d{1,2})(?:\s*-\s*(\d{1,2}))?,\s*(\d{4})$/);
+    if (!iso && !match) return [];
+    const year = Number(iso ? iso[1] : match[4]);
+    const month = iso ? Number(iso[2]) - 1 : monthIndex.get(match[1].toLowerCase());
+    const first = Number(iso ? iso[3] : match[2]);
+    const last = Number(iso ? iso[3] : match[3] || match[2]);
+    if (year < 1000 || month === undefined || month < 0 || month > 11 || first < 1 || last < first) return [];
+    const limit = new Date(year, month + 1, 0, 12).getDate();
+    if (last > limit) return []; // Reject the whole range, including invalid endpoints.
+    return Array.from({ length: last - first + 1 }, (_, index) => new Date(year, month, first + index, 12));
+  }
+
+  function clockMinutes(value, inheritedMeridiem = '') {
+    const match = value.trim().match(/^(\d{1,2})(?::(\d{2}))?\s*(am|pm)?$/);
+    if (!match) return null;
+    let hour = Number(match[1]);
+    const minute = Number(match[2] || 0);
+    const meridiem = match[3] || inheritedMeridiem;
+    if (minute > 59 || (meridiem ? hour < 1 || hour > 12 : hour > 23)) return null;
+    if (meridiem) hour = hour % 12 + (meridiem === 'pm' ? 12 : 0);
+    return hour * 60 + minute;
+  }
+
+  function reportTimes(rawTime, day) {
+    const text = (rawTime || '').toLowerCase().replace(/[\u2013\u2014]/g, '-').replace(/\s+/g, ' ').trim();
+    const clock = '(\\d{1,2}(?::\\d{2})?\\s*(?:am|pm)?)';
+    const pattern = new RegExp(`(?:([a-z]+)\\s+(\\d{1,2}),?\\s+)?${clock}\\s*-\\s*${clock}`, 'g');
+    const matches = [...text.matchAll(pattern)];
+    if (!matches.length) return null;
+    const dated = matches.some(match => match[1]);
+    const selectedMonth = Number(day.slice(5, 7)) - 1;
+    const selectedDay = Number(day.slice(8, 10));
+    let position = 0;
+    let label = null;
+    const intervals = [];
+    for (const match of matches) {
+      const gap = text.slice(position, match.index).trim();
+      if (position === 0 ? gap !== '' : !/^(?:and|[,;/])?$/.test(gap)) return null;
+      position = match.index + match[0].length;
+      if (match[1]) {
+        const month = monthIndex.get(match[1]);
+        const date = Number(match[2]);
+        const year = Number(day.slice(0, 4));
+        if (month === undefined || date < 1 || date > new Date(year, month + 1, 0, 12).getDate()) return null;
+        label = [month, date];
+      }
+      if (dated && !label) return null;
+      const meridiem = match[4].match(/(am|pm)$/)?.[1] || '';
+      const start = clockMinutes(match[3], meridiem);
+      const end = clockMinutes(match[4]);
+      if (start === null || end === null || end < start) return null;
+      if (!label || (label[0] === selectedMonth && label[1] === selectedDay)) intervals.push([start, end]);
+    }
+    if (text.slice(position).trim() || !intervals.length) return null;
+    return [Math.min(...intervals.map(item => item[0])), Math.max(...intervals.map(item => item[1]))];
+  }
+
+  function reportBoundary(rawTime, day, useEnd = false) {
+    const times = reportTimes(rawTime, day);
+    const minutes = times ? times[useEnd ? 1 : 0] : useEnd ? 24 * 60 : 0;
+    return Date.parse(`${day}T00:00:00+08:00`) + minutes * 60 * 1000;
+  }
+
+  // The same pure functions are available to Node's dependency-free regression tests.
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { dateKey, dalianDateKey, parseEventDates, reportTimes, reportBoundary };
+    return;
+  }
 
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   let sharedPastCalendar = null;
@@ -73,37 +152,6 @@
   // Keep the original inline navigation hooks working while adding the new header controls.
   window.showPage = pageId => setPage(pageId, false);
   window.showSubPage = subPageId => setSubPage(subPageId);
-
-  function dateKey(date) {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  }
-
-  function parseEventDates(rawValue) {
-    if (!rawValue) return [];
-    const normalized = rawValue
-      .replace(/\u00a0/g, ' ')
-      .replace(/[–—]/g, '-')
-      .replace(/\s+/g, ' ')
-      .trim();
-    const match = normalized.match(/^([A-Za-z]+)\s+(\d{1,2})(?:\s*-\s*(\d{1,2}))?,\s*(\d{4})$/);
-    if (!match) return [];
-
-    const month = monthIndex.get(match[1].slice(0, 3).toLowerCase());
-    const startDay = Number(match[2]);
-    const endDay = Number(match[3] || match[2]);
-    const year = Number(match[4]);
-    if (month === undefined || startDay < 1 || endDay < startDay) return [];
-
-    const dates = [];
-    for (let day = startDay; day <= endDay; day += 1) {
-      const date = new Date(year, month, day, 12);
-      if (date.getFullYear() === year && date.getMonth() === month && date.getDate() === day) dates.push(date);
-    }
-    return dates;
-  }
 
   function slugify(value) {
     const slug = value
@@ -184,20 +232,7 @@
   // Interpret event times in Dalian's timezone, independently of the visitor's timezone.
   function eventTime(event, date, useEnd = false) {
     const item = [...event.card.querySelectorAll('.meta-item')].find(node => node.querySelector('dt')?.textContent.trim().toLowerCase().startsWith('time'));
-    const text = item?.querySelector('dd')?.textContent.toLowerCase() || '';
-    const parts = text.replace(/[–—]/g, '-').split('-');
-    const value = useEnd ? (parts[1] || '') : parts[0];
-    const match = value.trim().match(/^(\d{1,2})(?::(\d{2}))?\s*(am|pm)?$/);
-    let hour = useEnd ? 23 : 0;
-    let minute = useEnd ? 59 : 0;
-    if (match) {
-      hour = Number(match[1]);
-      minute = Number(match[2] || 0);
-      const meridiem = match[3] || text.match(/(am|pm)\s*$/)?.[1];
-      if (meridiem) hour = hour % 12 + (meridiem === 'pm' ? 12 : 0);
-      if (hour > 23 || minute > 59) { hour = useEnd ? 23 : 0; minute = useEnd ? 59 : 0; }
-    }
-    return Date.parse(`${dateKey(date)}T${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}:00+08:00`);
+    return reportBoundary(item?.querySelector('dd')?.textContent || '', dateKey(date), useEnd);
   }
 
   function eventStatus(event, date, now = Date.now()) {
@@ -305,6 +340,7 @@
     function render() {
       const focusedDate = document.activeElement?.dataset.calendarDate;
       now = new Date();
+      const todayKey = dalianDateKey(now);
       title.textContent = `${monthNames[anchor.getMonth()]} ${anchor.getFullYear()}`;
       previousButton.disabled = Boolean(minimumMonth && anchor <= minimumMonth);
       grid.replaceChildren();
@@ -321,7 +357,7 @@
         const holiday = publicHolidayOn(key);
         const cell = document.createElement('div');
         const inMonth = date.getMonth() === anchor.getMonth();
-        const isToday = key === new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Shanghai', year: 'numeric', month: '2-digit', day: '2-digit' }).format(now);
+        const isToday = key === todayKey;
         const states = [...new Set(dayEvents.map(event => eventStatus(event, date, now.getTime())))];
         const dominant = states.includes('soon') ? 'soon' : states.includes('future') ? 'future' : 'past';
         cell.className = `calendar-day${inMonth ? '' : ' outside-month'}${isToday ? ' today' : ''}${dayEvents.length ? ` has-events event-${dominant}` : ''}${holiday ? ' public-holiday' : ''}${key === selectedKey ? ' is-selected' : ''}`;
@@ -405,7 +441,7 @@
     const usedIds = new Set([...document.querySelectorAll('[id]')].map(node => node.id));
     const allEvents = collectEvents(document.getElementById('main-content'), usedIds);
     const upcomingDates = allEvents.flatMap(event => event.dates.filter(date => eventStatus(event, date) !== 'past')).sort((a, b) => a - b);
-    upcomingStartMonth = dateKey(upcomingDates[0] || new Date()).slice(0, 7);
+    upcomingStartMonth = (upcomingDates[0] ? dateKey(upcomingDates[0]) : dalianDateKey()).slice(0, 7);
     sharedPastCalendar = document.querySelector('[data-calendar="all"]');
     if (sharedPastCalendar) {
       sharedPastCalendar.dataset.calendarStart = upcomingStartMonth;
@@ -457,25 +493,60 @@
     });
   }
 
+  function initBackToTop() {
+    const button = document.querySelector('.back-to-top');
+    if (!button) return;
+    let ticking = false;
+    const update = () => {
+      const visible = window.scrollY > 120;
+      button.classList.toggle('is-visible', visible);
+      button.setAttribute('aria-hidden', String(!visible));
+      button.tabIndex = visible ? 0 : -1;
+      ticking = false;
+    };
+    const schedule = () => {
+      if (!ticking) {
+        ticking = true;
+        window.requestAnimationFrame(update);
+      }
+    };
+    window.addEventListener('scroll', schedule, { passive: true });
+    window.addEventListener('resize', schedule, { passive: true });
+    update();
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     initHeader();
     initReveal();
+    initBackToTop();
 
     document.querySelectorAll('.primary-nav [data-target], .footer-links [data-target]').forEach(control => {
       control.addEventListener('click', () => setPage(control.dataset.target, true));
     });
 
-    document.querySelector('[data-back-to-top]')?.addEventListener('click', () => {
-      window.scrollTo({ top: 0, behavior: reduceMotion.matches ? 'auto' : 'smooth' });
+    document.querySelectorAll('[data-back-to-top], .back-to-top').forEach(control => {
+      control.addEventListener('click', () => window.scrollTo({ top: 0, behavior: reduceMotion.matches ? 'auto' : 'smooth' }));
+    });
+    document.querySelectorAll('.sub-nav-bar [data-target]').forEach(control => {
+      control.addEventListener('click', () => setSubPage(control.dataset.target));
     });
 
     const events = initCalendars();
-    const deepLinkId = decodeURIComponent(window.location.hash.slice(1));
-    const linkedEvent = events.find(event => event.card.id === deepLinkId);
-    if (linkedEvent) {
-      window.setTimeout(() => focusEvent(linkedEvent, false), 120);
-    } else if (deepLinkId === 'past' || deepLinkId === 'home') {
-      setPage(deepLinkId, false);
+    const firstSemester = document.querySelector('#semester-navigation [data-target]')?.dataset.target;
+    if (firstSemester) setSubPage(firstSemester, false);
+    setPage('home', false);
+    function followHash() {
+      let deepLinkId = window.location.hash.slice(1);
+      try { deepLinkId = decodeURIComponent(deepLinkId); } catch { /* Keep malformed links harmless. */ }
+      const linkedEvent = events.find(event => event.card.id === deepLinkId);
+      if (linkedEvent) {
+        sharedPastCalendarController?.showMonth(dateKey(linkedEvent.dates[0]).slice(0, 7));
+        window.setTimeout(() => focusEvent(linkedEvent, false), 120);
+      } else if (deepLinkId === 'past' || deepLinkId === 'home') {
+        setPage(deepLinkId, false);
+      }
     }
+    window.addEventListener('hashchange', followHash);
+    followHash();
   });
 })();

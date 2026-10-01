@@ -1,6 +1,6 @@
 # DDES
 
-Last updated: 2026-09-11 (UTC+8).
+Last updated: 2026-10-01 (UTC+8).
 
 DUT Differential Equations Seminar
 
@@ -69,3 +69,18 @@ not duplicate reports. Structural HTML errors stop the operation before writing.
 For a reproducible preview, use
 `python scripts/archive_events.py --now 2026-09-11T09:00:00+08:00`.
 Run the checks with `python -m unittest discover -s scripts -p 'test_*.py'`.
+
+### Recognition checks (2026-10-01)
+
+The calendar and archiver validate complete dates (English month names or ISO
+`YYYY-MM-DD`) and 12/24-hour time ranges. Multiple sessions and date-labeled
+sessions are supported; a multi-day report waits for the final session on its
+last day. Unknown, invalid or ambiguous times wait until the next midnight in
+UTC+8. No partial date range or malformed 12-hour clock is treated as valid.
+
+Calendar and archive regression checks share the same date/time examples. Run
+`python -m unittest discover -s scripts -p 'test_*.py'` and
+`node --test scripts/test_calendar.cjs`. Node needs no additional packages.
+
+Navigation uses one initializer. Report links open the corresponding semester
+and calendar month; malformed URL fragments do not interrupt the page.

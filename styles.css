@@ -1850,7 +1850,7 @@ button { margin: 0; }
 .calendar-agenda-link[data-event-status="future"] { border-left: 4px solid #61b8cf; }
 @media (max-width: 640px) {
   .schedule-overview { padding-top: 38px; }
-  .calendar-state-label { font-size: clamp(6px, 1.8vw, 8px); letter-spacing: -.015em; white-space: normal; overflow-wrap: anywhere; }
+  .calendar-state-label { font-size: clamp(6px, 1.8vw, 8px); letter-spacing: -.015em; white-space: normal; overflow-wrap: normal; }
 }
 
 .seminar {
@@ -2065,8 +2065,8 @@ button { margin: 0; }
   .calendar-weekdays { padding: 12px 7px 5px; font-size: .48rem; }
   .calendar-grid { gap: 3px; padding: 6px 7px 12px; }
   .calendar-day { min-height: 52px; padding: 6px; }
-  .calendar-day.has-events > button { min-height: 50px; padding: 6px; }
-  .calendar-day.public-holiday > button { min-height: 50px; padding: 6px; }
+  .calendar-day.has-events > button { min-height: 50px; padding: 6px 2px; }
+  .calendar-day.public-holiday > button { min-height: 50px; padding: 6px 2px; }
   .calendar-day-number { font-size: .78rem; }
   .calendar-day.has-events .calendar-day-number,
   .calendar-day.public-holiday .calendar-day-number { font-size: .88rem; }
