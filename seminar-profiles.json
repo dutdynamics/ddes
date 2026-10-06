@@ -1,0 +1,16 @@
+{
+  "event-2026-10-08-the-linear-stability-of-relative-equilibria-in-the-n-b": {
+    "experiences": [
+      { "period": "2026.06--Present", "position": "PostDoc in Mathematics", "university": "Dalian University of Technology", "country": "China" },
+      { "period": "2026.03--2026.06", "position": "Visiting Scholar", "university": "Nankai University", "country": "China" },
+      { "period": "2021.09--2025.12", "position": "PhD in Mathematics", "university": "Shandong University", "country": "China" },
+      { "period": "2023.11--2025.10", "position": "Visiting PhD student", "university": "Paris Observatory", "country": "France" },
+      { "period": "2018.09--2021.06", "position": "Master in Mathematics", "university": "Shandong University", "country": "China" },
+      { "period": "2014.09--2018.06", "position": "Bachelor in Mathematics", "university": "Lanzhou University", "country": "China" }
+    ],
+    "interests": [
+      "Relative equilibria of the Newtonian N-body problem",
+      "Applications of Maslov index theory in the N-body problem"
+    ]
+  }
+}

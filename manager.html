@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="robots" content="noindex">
+  <title>DDES · 日程与报告管理</title>
+  <link rel="stylesheet" href="manager.css">
+  <script src="script.js" defer></script>
+  <script src="manager-core.js" defer></script>
+  <script src="manager-api.js" defer></script>
+  <script src="manager.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#event-form">跳到报告编辑</a>
+  <header class="manager-header">
+    <div class="header-inner">
+      <a class="brand" href="index.html"><span class="brand-mark">D</span><span><strong>DDES</strong><small>Seminar Studio</small></span></a>
+      <a class="back-link" href="index.html">返回报告网站 <span aria-hidden="true">↗</span></a>
+    </div>
+  </header>
+
+  <main class="manager-shell">
+    <section class="intro" aria-labelledby="page-title">
+      <div><p class="eyebrow">SCHEDULE &amp; REPORTS</p><h1 id="page-title">把下一场报告，准备好。</h1><p class="intro-copy">编辑日程，整理报告人经历，生成模板 PDF。所有报告时间按北京时间 UTC+8。</p></div>
+      <div class="connection"><span id="connection-indicator" class="status-dot"></span><span id="connection-text">正在读取日程…</span><small id="today-label"></small></div>
+    </section>
+
+    <aside id="local-help" class="notice helper-notice" hidden>
+      <div><strong>当前可编辑和保存草稿</strong><p>生成 PDF、发布到网站需要先启动本地助手。启动后，在助手页面继续；草稿也可以导出后导入。</p></div>
+      <div class="helper-links"><a class="button button-secondary" href="start-manager.cmd" download>下载启动助手</a><a class="button button-primary" href="http://127.0.0.1:8765/manager.html">打开本地助手 ↗</a></div>
+    </aside>
+    <div id="load-warning" class="notice warning" role="status" hidden></div>
+    <div id="message" class="notice" role="status" aria-live="polite" hidden></div>
+
+    <div class="workspace">
+      <aside class="event-sidebar panel" aria-labelledby="list-heading">
+        <div class="panel-heading"><div><p class="eyebrow">UPCOMING</p><h2 id="list-heading">尚未开始的报告 <span id="event-count" class="count">0</span></h2></div><button id="new-event" class="add-button" type="button" aria-label="添加报告">+</button></div>
+        <div class="list-search"><label class="sr-only" for="event-search">搜索报告人或标题</label><input id="event-search" type="search" placeholder="搜索报告人或标题" autocomplete="off"></div>
+        <div id="event-list" class="event-list" aria-label="选择报告"><p class="empty-note">正在读取最新日程…</p></div>
+        <div class="sidebar-bottom"><p id="draft-status" aria-live="polite">网站内容尚未修改</p><div class="draft-actions"><button id="export-draft" type="button" class="text-button">导出草稿</button><button id="discard-draft" type="button" class="text-button" disabled>撤销草稿</button></div><details class="import-details"><summary>从文件导入日程</summary><p>支持本页导出的 JSON，以及有日期、报告人表头的 CSV、TSV 或 Markdown 表格。</p><label class="upload-control">选择文件<input id="import-file" type="file" accept=".json,.csv,.tsv,.md,.txt,application/json,text/csv,text/tab-separated-values,text/plain"></label></details></div>
+      </aside>
+
+      <section class="editor panel" aria-labelledby="editor-heading">
+        <div class="editor-top"><div><p class="eyebrow" id="editor-eyebrow">REPORT DETAILS</p><h2 id="editor-heading">报告信息</h2></div><div class="editor-tabs" role="tablist" aria-label="编辑或预览"><button id="edit-tab" role="tab" aria-selected="true" aria-controls="edit-panel" class="tab active" type="button">编辑</button><button id="preview-tab" role="tab" aria-selected="false" aria-controls="preview-panel" class="tab" type="button">预览</button></div></div>
+        <div id="no-selection" class="editor-empty" hidden><span aria-hidden="true">＋</span><h3>准备下一场报告</h3><p>从左侧选择报告，或添加一场新的报告。</p><button id="new-event-empty" type="button" class="button button-primary">添加报告</button></div>
+        <div id="edit-panel" role="tabpanel" aria-labelledby="edit-tab">
+          <form id="event-form" novalidate>
+            <fieldset id="form-fields" disabled>
+              <section class="form-section">
+                <div class="section-label"><span>01</span><h3>报告人与时间</h3></div>
+                <div class="form-grid"><label class="field">报告人姓名 <span class="required">*</span><input name="speakerName" id="speaker-name" required maxlength="180" placeholder="例如 Jiexin Sun（孙洁昕）" autocomplete="off"></label><label class="field">身份与所属单位<input name="speakerAffiliation" id="speaker-affiliation" maxlength="350" placeholder="例如 PostDoc@DUT" autocomplete="off"></label></div>
+                <div class="form-grid"><label class="field">报告日期 <span class="required">*</span><input name="date" id="event-date" type="date" required><small id="weekday-hint">常规报告安排在周四，请选择日期。</small></label><label class="field">地点<input name="place" id="event-place" maxlength="180" placeholder="Room 114"></label></div>
+                <div class="form-grid"><label class="field">开始时间 <span class="time-zone">北京时间</span><input name="startTime" id="start-time" type="time" required></label><label class="field">结束时间<input name="endTime" id="end-time" type="time" required></label></div>
+                <p id="multi-day-note" class="field-note" hidden></p>
+              </section>
+              <section class="form-section">
+                <div class="section-label"><span>02</span><h3>标题与摘要</h3></div>
+                <label class="field">报告标题<textarea name="title" id="event-title" rows="2" maxlength="800" placeholder="TBA"></textarea></label>
+                <label class="field">摘要<textarea name="abstract" id="event-abstract" rows="6" maxlength="20000" placeholder="TBA"></textarea><small>可填写英文或中文；数学公式可以保留 LaTeX 写法。</small></label>
+              </section>
+              <section class="form-section">
+                <div class="section-heading"><div class="section-label"><span>03</span><h3>个人经历</h3></div><button id="add-experience" class="text-button accent" type="button">＋ 添加经历</button></div>
+                <p class="field-note">按希望在 PDF 中显示的顺序添加。职位可选择，也可直接填写。</p>
+                <div id="experience-list" class="experience-list"></div>
+                <datalist id="positions"><option value="Bachelor's student" label="本科"></option><option value="Master's student" label="硕士"></option><option value="PhD student" label="博士"></option><option value="Visiting PhD student" label="交流博士"></option><option value="Postdoctoral researcher" label="博士后"></option><option value="Lecturer" label="讲师"></option><option value="Associate Professor" label="副教授"></option><option value="Professor" label="教授"></option></datalist>
+              </section>
+              <section class="form-section interests-section">
+                <div class="section-label"><span>04</span><h3>研究兴趣</h3></div>
+                <div id="interest-list" class="interest-list" aria-label="研究兴趣关键词"></div>
+                <div class="keyword-add"><label class="sr-only" for="interest-input">新的研究兴趣关键词</label><input id="interest-input" placeholder="输入一个关键词，按 Enter 添加" maxlength="300"><button id="add-interest" class="button button-secondary" type="button">添加</button></div>
+                <p id="interest-sentence" class="interest-sentence">填写关键词后，预览会自动用英文逗号分隔，并以英文句号结束。</p>
+              </section>
+            </fieldset>
+          </form>
+        </div>
+        <div id="preview-panel" class="preview-panel" role="tabpanel" aria-labelledby="preview-tab" hidden><div class="preview-hint">内容预览 · 最终 PDF 使用报告模板排版</div><article id="report-preview" class="report-preview"></article></div>
+        <footer id="editor-footer" class="editor-footer">
+          <div class="save-row"><span id="change-count">没有待发布的变更</span><button id="save-draft" class="button button-secondary" type="button" disabled>保存草稿</button><button id="generate-pdf" class="button button-secondary" type="button" disabled>生成 PDF</button></div>
+          <div class="publish-row"><div class="publish-options"><label><input id="public-confirm" type="checkbox">我已核对内容，同意将本页填写的信息公开到网站</label><label><input id="publish-pdf" type="checkbox">同时发布当前报告的 PDF</label></div><button id="publish" class="button button-primary" type="button" disabled>发布到网站 <span aria-hidden="true">↗</span></button></div>
+          <p id="publish-hint" class="footer-hint">草稿只保存在当前浏览器中，发布后所有人都可以查看。</p>
+          <div id="operation-status" class="operation-status" aria-live="polite" hidden></div>
+        </footer>
+      </section>
+    </div>
+    <p class="page-footer">DDES Seminar · 只编辑尚未开始的报告 · 北京时间 UTC+8</p>
+  </main>
+  <dialog id="confirm-dialog" class="confirm-dialog"><form method="dialog"><h2 id="dialog-title">确认操作</h2><p id="dialog-copy"></p><div class="dialog-actions"><button class="button button-secondary" value="cancel">取消</button><button id="dialog-confirm" class="button button-primary" value="confirm">确认</button></div></form></dialog>
+</body>
+</html>

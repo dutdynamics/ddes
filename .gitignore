@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+scripts/tmp*/
+output/
+*.aux
+*.log
+*.out
+*.xdv
