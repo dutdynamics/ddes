@@ -1,0 +1,21 @@
+\documentclass[tikz,border=0pt]{standalone}
+\usepackage{xcolor}
+
+\definecolor{DLADEBlue}{HTML}{003B70}
+\definecolor{DLADEGold}{HTML}{FFCA05}
+
+% Portable vector rendering of dlade-favicon.svg.
+% The original SVG is included in the project archive as the source asset.
+\begin{document}
+\begin{tikzpicture}[x=1pt,y=1pt,line cap=round]
+  \fill[DLADEBlue,rounded corners=12pt] (0,0) rectangle (64,64);
+  \draw[white,line width=2.5pt] (32,32) circle[radius=25pt];
+  \draw[white,line width=2.8pt]
+    (18,20) .. controls (23,36) and (31,42) .. (47,38);
+  \draw[white,line width=2.8pt]
+    (17,29) .. controls (28,27) and (36,20) .. (43,11);
+  \draw[white,line width=2.8pt]
+    (25,50) .. controls (22,36) and (26,23) .. (40,12);
+  \fill[DLADEGold] (47,40) circle[radius=4.5pt];
+\end{tikzpicture}
+\end{document}

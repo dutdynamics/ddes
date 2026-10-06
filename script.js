@@ -91,6 +91,7 @@
     return;
   }
 
+  window.DDESDateUtils = { dateKey, dalianDateKey, parseEventDates, reportTimes, reportBoundary };
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   let sharedPastCalendar = null;
   let sharedPastCalendarController = null;

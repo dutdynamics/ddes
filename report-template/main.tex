@@ -1,0 +1,265 @@
+% !TeX program = xelatex
+% Save this file with UTF-8 encoding.
+
+\documentclass[a4paper,10pt]{article}
+
+\usepackage[
+  a4paper,
+  top=26mm,
+  bottom=12mm,
+  left=25mm,
+  right=25mm
+]{geometry}
+
+% Fonts and Chinese support
+\usepackage{fontspec}
+\usepackage{xeCJK}
+
+\setmainfont{TeX Gyre Termes}
+\setsansfont{TeX Gyre Heros}
+
+\setCJKmainfont{FandolSong-Regular}[
+  BoldFont=FandolSong-Bold,
+  ItalicFont=FandolKai-Regular
+]
+\setCJKsansfont{FandolHei-Regular}[
+  BoldFont=FandolHei-Bold
+]
+
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb}
+\usepackage{anyfontsize}
+\usepackage{xcolor}
+\usepackage{array,tabularx}
+\usepackage{microtype}
+
+\definecolor{DLADEBlue}{HTML}{003B70}
+\definecolor{DLADEAccent}{HTML}{0066C5}
+\definecolor{DLADEGold}{HTML}{FFCA05}
+\definecolor{DLADEMuted}{HTML}{59758E}
+
+\definecolor{Highlight}{HTML}{D7191C}
+
+\usepackage[
+  colorlinks=true,
+  urlcolor=DLADEAccent,
+  linkcolor=DLADEAccent
+]{hyperref}
+
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt}
+\renewcommand{\arraystretch}{1.0}
+\emergencystretch=1em
+
+% -----------------------------------------------------------------------------
+% EDITABLE SEMINAR DETAILS
+% -----------------------------------------------------------------------------
+
+\newcommand{\SeminarSeries}{DDES - DUT Differential Equations Seminar}
+\newcommand{\SeminarTitle}{The linear stability of relative equilibria in the N-body problem }
+\newcommand{\SpeakerName}{JieXin Sun}
+\newcommand{\SpeakerAffiliation}{孙洁昕, PostDoc@DUT}
+%\textcolor{Highlight}{\textbf{111-A}}
+\newcommand{\SeminarVenue}{Seminar Room 114}
+%\textcolor{Highlight}{2:00pm - 2:45pm}
+\newcommand{\SeminarTime}{9:00am - 9:45am, Thursday, October 8, 2026}
+\newcommand{\GroupURL}{https://dutdynamics.github.io/ddes/}
+
+\hypersetup{
+  pdftitle={\SeminarTitle},
+  pdfauthor={DLADE Group, School of Mathematical Sciences, Dalian University of Technology},
+  pdfsubject={DLADE seminar report}
+}
+
+\begin{document}
+
+% =============================================================================
+% UPPER HALF: IDENTITY, LOGISTICS, TITLE AND ABSTRACT
+% =============================================================================
+
+\noindent
+\begin{minipage}[t][\dimexpr0.50\textheight+35mm\relax][t]{\textwidth}
+\vspace{0pt}
+
+% -----------------------------------------------------------------------------
+% UNIVERSITY IDENTITY
+% -----------------------------------------------------------------------------
+
+\begin{tabularx}{\textwidth}{@{}X@{\hspace{8mm}}p{62mm}@{}}
+  \begin{minipage}[t]{\linewidth}
+    \vspace{0pt}
+    \includegraphics[
+      trim=66 45 60 55,
+      clip,
+      width=79mm
+    ]{DUT_symbol.pdf}
+  \end{minipage}
+  &
+  \begin{minipage}[t]{\linewidth}
+    \vspace{0pt}
+    \hfill
+    \begin{minipage}[t]{60mm}
+      \raggedleft
+      {\sffamily\bfseries\fontsize{9.5}{11.2}\selectfont
+        School of Mathematical Sciences\par
+        Dalian University of Technology\par
+      }
+
+      \vspace{1mm}
+
+      {\sffamily\fontsize{8.4}{10}\selectfont
+        Linggong Road 2\par
+        116024 Dalian, P.R. China\par
+      }
+
+      \vspace{1mm}
+
+      {\sffamily\fontsize{6.2}{7.4}\selectfont\color{DLADEAccent}
+        \href{\GroupURL}{dutdynamics.github.io/ddes}\par
+      }
+    \end{minipage}
+  \end{minipage}
+\end{tabularx}
+
+% -----------------------------------------------------------------------------
+% SEMINAR LOGISTICS
+% -----------------------------------------------------------------------------
+
+\vspace{6mm}
+
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}b{90mm}@{\hspace{8mm}}>{\raggedleft\arraybackslash}b{62mm}@{}}
+  \begin{minipage}[b]{\linewidth}
+    {\fontsize{10.7}{12.8}\selectfont
+      \SeminarSeries\par
+    }
+
+    \vspace{1mm}
+
+    {\fontsize{10.7}{12.8}\selectfont
+      \SeminarVenue\par
+    }
+
+    \vspace{1mm}
+
+    {\bfseries\fontsize{10.7}{12.8}\selectfont
+      \SeminarTime\par
+    }
+  \end{minipage}
+  &
+  \includegraphics[
+    trim=35 160 35 155,
+    clip,
+    width=27mm
+  ]{QR.pdf}
+\end{tabular*}
+
+\vspace{38mm}
+
+% -----------------------------------------------------------------------------
+% TALK TITLE AND SPEAKER
+% -----------------------------------------------------------------------------
+
+\begin{center}
+  {\bfseries\fontsize{14.5}{16.8}\selectfont
+    \SeminarTitle\par
+  }
+
+  \vspace{0.8mm}
+
+  {\fontsize{10.7}{12.7}\selectfont
+    \textcolor{black}{\SpeakerName} (\SpeakerAffiliation)\par
+  }
+\end{center}
+
+\vspace{1.3mm}
+
+% -----------------------------------------------------------------------------
+% ABSTRACT
+% -----------------------------------------------------------------------------
+
+{\fontsize{9.7}{11.55}\selectfont
+  \textbf{Abstract.}
+  In this talk, I will introduce some results on the linear stability of relative equilibria in the N-body problem obtained using the Maslov-type index. The talk consists of three parts.
+
+In the first part, I will briefly introduce the basic definition of a relative equilibrium and describe the linear stability problem.
+
+In the second part, I will introduce some basic background on the Maslov-type index and explain the idea of using the Maslov-type index to study the linear stability problem.
+
+In the third part, I will present the fundamental solution of the Kepler problem and then some qualitative and quantitative results on the linear stability of relative equilibria in the N-body problem obtained using the idea introduced in the second part.
+
+This talk is based on joint work with Prof. Xijun Hu and Prof. Yuwei Ou.
+  \par
+}
+
+\vfill
+\end{minipage}
+\par
+\nointerlineskip
+
+% =============================================================================
+% LOWER HALF: SPEAKER BIOGRAPHY
+% =============================================================================
+
+{\bfseries\fontsize{11}{13}\selectfont
+  \SpeakerName\par
+}
+
+\vspace{2mm}
+
+{\fontsize{9.2}{11}\selectfont
+  \begin{tabularx}{\textwidth}{@{}>{\bfseries}p{25mm}@{\hspace{2mm}}>{\raggedright\arraybackslash}X@{}}
+    2026.06--Present
+      & PostDoc in Mathematics, Dalian University of Technology, China.\\[0.35mm]
+    2026.03--2026.06
+      & Visiting Scholar, Nankai University, China.\\[0.35mm]
+    2021.09--2025.12
+      & PhD in Mathematics, Shandong University, China.\\[0.35mm]
+    2023.11--2025.10
+      & Visiting PhD student, Paris Observatory, France.\\[0.35mm]
+    2018.09--2021.06
+      & Master in Mathematics, Shandong University, China.\\[0.35mm]
+    2014.09--2018.06
+      & Bachelor in Mathematics, Lanzhou University, China.
+  \end{tabularx}
+  \par
+}
+
+\vspace{3mm}
+
+{\fontsize{9.5}{11.3}\selectfont
+  \textbf{Research Interests:}
+  Relative Eqilibria of the Newtonian N-body Problem, Applications of Maslov Index Theory in the N-body Problem.
+  \par
+}
+
+\vfill
+
+% =============================================================================
+% DLADE BRAND BAR
+% =============================================================================
+
+{\color{DLADEGold}\rule{\textwidth}{0.9mm}}\par
+\vspace{0.6mm}
+
+\begingroup
+\setlength{\fboxsep}{0pt}
+\noindent\colorbox{DLADEBlue}{%
+  \begin{minipage}[c][10mm][c]{\textwidth}
+    \begin{tabular*}{\linewidth}{@{\hspace{6mm}}m{9mm}@{\hspace{2.3mm}}m{70mm}@{\extracolsep{\fill}}>{\raggedleft\arraybackslash}m{60mm}@{\hspace{6mm}}}
+      \includegraphics[width=9mm]{dlade-favicon.pdf}
+      &
+      {\sffamily\bfseries\fontsize{7.2}{8.5}\selectfont\color{white}
+        DLADE - DaLian Analysis\,\&\,Differential Equations
+      }
+      &
+      {\sffamily\fontsize{5.8}{7}\selectfont\color{white!78}
+        SCHOOL OF MATHEMATICAL SCIENCES - DUT
+      }
+    \end{tabular*}
+  \end{minipage}%
+}
+\par
+\endgroup
+
+\end{document}
