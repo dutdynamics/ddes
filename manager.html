@@ -27,10 +27,6 @@
       <div class="connection"><span id="connection-indicator" class="status-dot"></span><span id="connection-text">正在读取日程…</span><small id="today-label"></small></div>
     </section>
 
-    <aside id="local-help" class="notice helper-notice" hidden>
-      <div><strong>当前可编辑和保存草稿</strong><p>生成 PDF、发布到网站需要先启动本地助手。启动后，在助手页面继续；草稿也可以导出后导入。</p></div>
-      <div class="helper-links"><a class="button button-secondary" href="start-manager.cmd" download>下载启动助手</a><a class="button button-primary" href="http://127.0.0.1:8765/manager.html">打开本地助手 ↗</a></div>
-    </aside>
     <div id="load-warning" class="notice warning" role="status" hidden></div>
     <div id="message" class="notice" role="status" aria-live="polite" hidden></div>
 
@@ -78,7 +74,7 @@
         <div id="preview-panel" class="preview-panel" role="tabpanel" aria-labelledby="preview-tab" hidden><div class="preview-hint">内容预览 · 最终 PDF 使用报告模板排版</div><article id="report-preview" class="report-preview"></article></div>
         <footer id="editor-footer" class="editor-footer">
           <div class="save-row"><span id="change-count">没有待发布的变更</span><button id="save-draft" class="button button-secondary" type="button" disabled>保存草稿</button><button id="generate-pdf" class="button button-secondary" type="button" disabled>生成 PDF</button></div>
-          <div class="publish-row"><div class="publish-options"><label><input id="public-confirm" type="checkbox">我已核对内容，同意将本页填写的信息公开到网站</label><label><input id="publish-pdf" type="checkbox">同时发布当前报告的 PDF</label></div><button id="publish" class="button button-primary" type="button" disabled>发布到网站 <span aria-hidden="true">↗</span></button></div>
+          <div class="publish-row"><div class="publish-options"><label><input id="public-confirm" type="checkbox">我已核对内容，同意将本页填写的信息公开到网站</label></div><button id="publish" class="button button-primary" type="button" disabled>发布到网站 <span aria-hidden="true">↗</span></button></div>
           <p id="publish-hint" class="footer-hint">草稿只保存在当前浏览器中，发布后所有人都可以查看。</p>
           <div id="operation-status" class="operation-status" aria-live="polite" hidden></div>
         </footer>

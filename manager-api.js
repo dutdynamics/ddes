@@ -19,20 +19,19 @@
   }
   async function load() {
     local = ['127.0.0.1', 'localhost'].includes(location.hostname);
-    if (local) {
-      const status = await (await read(await fetch('/api/status', { cache: 'no-store' }))).json();
-      nonce = status.nonce;
-      const snapshot = await (await read(await fetch('/api/events', { cache: 'no-store' }))).json();
-      revision = snapshot.revision;
-      return { ...snapshot, status: { ...status, local: true } };
+    if (!local) throw new Error('此管理工具仅供内部使用，请双击 start-manager.cmd 后从本机助手打开。');
+    const status = await (await read(await fetch('/api/status', { cache: 'no-store' }))).json();
+    if (status.service !== 'ddes-manager' || !status.local || typeof status.nonce !== 'string' || !status.nonce) {
+      local = false;
+      throw new Error('未连接到内部日程助手，请使用 start-manager.cmd 启动。');
     }
-    const html = await (await read(await fetch(`index.html?v=${Date.now()}`, { cache: 'no-store' }))).text();
-    const response = await fetch(`seminar-profiles.json?v=${Date.now()}`, { cache: 'no-store' });
-    const profiles = response.ok ? await response.json() : {};
-    return { ...await core.parseWebsite(html, profiles), revision: '', status: { local: false, github: false, xelatex: false } };
+    nonce = status.nonce;
+    const snapshot = await (await read(await fetch('/api/events', { cache: 'no-store' }))).json();
+    revision = snapshot.revision;
+    return { ...snapshot, status: { ...status, local: true } };
   }
-  async function publish(events, options = {}) {
-    const response = await post('/api/publish', { events, revision, confirmPublic: true, pdfEventId: options.pdfEventId || null });
+  async function publish(events) {
+    const response = await post('/api/publish', { events, revision, confirmPublic: true });
     const result = await response.json();
     if (result.revision && ['merged', 'unchanged'].includes(result.status)) revision = result.revision;
     return { ...result, merged: result.status === 'merged' || result.merged === true, url: result.prUrl || result.url };

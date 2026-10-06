@@ -144,19 +144,13 @@ def make_handler(app):
                 if route == '/api/publish':
                     if data.get('confirmPublic') is not True:
                         raise ValueError('发布前请确认内容可以公开。')
-                    with app.operation(), tempfile.TemporaryDirectory(prefix='ddes-publish-') as temp:
+                    if data.get('pdfEventId') or data.get('pdfPaths') or data.get('pdf_paths'):
+                        raise ValueError('PDF 仅用于线下发布，不支持上传网站。')
+                    with app.operation():
                         events = data.get('events')
                         if not isinstance(events, list) or not 0 < len(events) <= 200:
                             raise ValueError('报告列表无效。')
-                        pdf_paths = {}
-                        selected_id = data.get('pdfEventId')
-                        if selected_id:
-                            selected = next((event for event in events if isinstance(event, dict) and event.get('id') == selected_id), None)
-                            if not selected:
-                                raise ValueError('请选择要公开 PDF 的报告。')
-                            selected = validate_event(selected)
-                            pdf_paths[selected_id] = app.pdf_builder(selected, Path(temp) / 'report.pdf')
-                        result = app.store.publish(events, data.get('revision'), pdf_paths=pdf_paths)
+                        result = app.store.publish(events, data.get('revision'))
                     return self.json(200, result)
                 return self.json(404, {'error': '接口不存在。'})
             except (ValueError, RuntimeError, OSError, ReportError, json.JSONDecodeError) as error:

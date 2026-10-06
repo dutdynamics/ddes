@@ -12,7 +12,6 @@ from hashlib import sha256
 from html import escape
 from html.parser import HTMLParser
 import json
-from pathlib import Path
 import re
 import subprocess
 import unicodedata
@@ -366,11 +365,14 @@ def _new_card(event, newline):
     return newline.join(lines)
 
 
-def _pdf_link(identity, newline):
-    return f'{newline}    <p class="seminar-download" data-manager-pdf="true"><a href="reports/{identity}.pdf" target="_blank" rel="noopener">Download seminar PDF</a></p>{newline}'
+def _reject_pdf_uploads(pdf_paths):
+    # Keep the old argument so an older client fails explicitly instead of
+    # uploading a locally generated poster through a forgotten integration.
+    if pdf_paths is not None and (not isinstance(pdf_paths, dict) or pdf_paths):
+        raise ValueError('PDF is for offline use only; uploading a PDF is not supported.')
 
 
-def _replace_card(doc, card, old, event, pdf=False):
+def _replace_card(doc, card, old, event):
     source = doc.source
     edits = []
     opening = source[card.start:card.opening_end]
@@ -400,10 +402,6 @@ def _replace_card(doc, card, old, event, pdf=False):
         description = _nodes(doc, card, 'description')[0]
         start, end = _inside(source, description)
         edits.append((start, end, '<p>' + '<br>'.join(escape(line) for line in event['abstract'].split('\n')) + '</p>'))
-    if pdf and 'data-manager-pdf=' not in source[card.start:card.end]:
-        _, closing = _inside(source, card)
-        newline = '\r\n' if '\r\n' in source else '\n'
-        edits.append((closing, closing, _pdf_link(event['id'], newline)))
     raw = source[card.start:card.end]
     for start, end, replacement in sorted(edits, reverse=True):
         raw = raw[:start - card.start] + replacement + raw[end - card.start:]
@@ -415,7 +413,9 @@ def apply_events(html, original_events, updated_events, pdf_paths=None):
 
     Events must already have been validated for the intended time. Existing
     unedited articles, including every Past article, retain their exact bytes.
+    Posters are generated and downloaded separately for offline use.
     """
+    _reject_pdf_uploads(pdf_paths)
     if not isinstance(original_events, list) or not isinstance(updated_events, list):
         raise ValueError('Reports must be supplied as lists.')
     original = {event['id']: event for event in original_events}
@@ -424,9 +424,6 @@ def apply_events(html, original_events, updated_events, pdf_paths=None):
         raise ValueError('Duplicate report ID.')
     if not original.keys() <= updated.keys():
         raise ValueError('Existing reports cannot be deleted.')
-    pdf_paths = pdf_paths or {}
-    if not isinstance(pdf_paths, dict) or not pdf_paths.keys() <= updated.keys():
-        raise ValueError('A PDF must belong to an editable report.')
     doc = Document(html)
     home = doc.by_id('home')
     records = _cards(doc)
@@ -443,8 +440,8 @@ def apply_events(html, original_events, updated_events, pdf_paths=None):
         event = updated[identity]
         if event.get('sourceKey') != old.get('sourceKey'):
             raise ConflictError('The source key changed; refresh the schedule.')
-        if any(old.get(key) != event.get(key) for key in FIELDS) or identity in pdf_paths:
-            edits.append((card.start, card.end, _replace_card(doc, card, old, event, identity in pdf_paths)))
+        if any(old.get(key) != event.get(key) for key in FIELDS):
+            edits.append((card.start, card.end, _replace_card(doc, card, old, event)))
     new = [event for identity, event in updated.items() if identity not in original]
     reserved = _Identifiers(html).values
     for event in new:
@@ -481,8 +478,6 @@ def apply_events(html, original_events, updated_events, pdf_paths=None):
             key = (event['date'], event['startTime'])
             insertion = next((card.start for card, existing_key in dated_cards if existing_key > key), append_at)
             raw = _new_card(event, newline)
-            if event['id'] in pdf_paths:
-                raw = raw[:-len('</article>')] + _pdf_link(event['id'], newline) + '</article>'
             additions.setdefault(insertion, []).append(newline + '                ' + raw)
         for insertion, blocks in additions.items():
             edits.append((insertion, insertion, ''.join(blocks)))
@@ -572,6 +567,7 @@ class Store:
         return result
 
     def publish(self, events, revision, pdf_paths=None):
+        _reject_pdf_uploads(pdf_paths)
         if not isinstance(revision, str) or not SHA_PATTERN.fullmatch(revision):
             raise ValueError('Invalid source revision.')
         latest, html, profiles = self._read()
@@ -587,21 +583,17 @@ class Store:
         parsed = parse_events(html, profiles, instant)
         all_original = parse_events(html, profiles, instant, include_started=True)['events']
         original_by_id = {event['id']: event for event in all_original}
-        if pdf_paths is not None and not isinstance(pdf_paths, dict):
-            raise ValueError('PDF paths must be an object.')
         included_started = []
         for event in updated:
             before = original_by_id.get(event['id'])
             if before is not None and _event_start(before) <= instant:
                 if event['sourceKey'] != before['sourceKey'] or any(event.get(key) != before.get(key) for key in FIELDS):
                     raise ValueError('A report started while this page was open and cannot be changed. Refresh the schedule.')
-                if event['id'] in (pdf_paths or {}):
-                    raise ValueError('The PDF of a report that has started cannot be replaced.')
                 included_started.append(before)
             elif _event_start(event) <= instant:
                 raise ValueError('Only reports that have not started can be edited or added.')
         original = parsed['events'] + included_started
-        edited_html = apply_events(html, original, updated, pdf_paths)
+        edited_html = apply_events(html, original, updated)
         updated_profiles = deepcopy(profiles)
         for event in updated:
             if _event_start(event) <= instant:
@@ -619,16 +611,6 @@ class Store:
             contents['index.html'] = edited_html.encode('utf-8')
         if updated_profiles != profiles:
             contents['seminar-profiles.json'] = (json.dumps(updated_profiles, ensure_ascii=False, indent=2) + '\n').encode('utf-8')
-        for identity, path in (pdf_paths or {}).items():
-            if identity not in {event['id'] for event in updated} or not ID_PATTERN.fullmatch(identity):
-                raise ValueError('Invalid PDF report ID.')
-            path = Path(path)
-            if not path.is_file() or path.stat().st_size > 20_000_000:
-                raise ValueError('The PDF file is missing or too large.')
-            data = path.read_bytes()
-            if not data.startswith(b'%PDF-'):
-                raise ValueError('The generated file is not a PDF.')
-            contents[f'reports/{identity}.pdf'] = data
         if not contents:
             return {'status': 'unchanged', 'revision': revision, 'warnings': parsed['warnings']}
         commit = self._api(self._endpoint(f'git/commits/{revision}'))
@@ -656,7 +638,7 @@ class Store:
             'head': branch, 'base': 'main',
             'body': 'Update upcoming seminar details and speaker biographies from the local seminar manager. '
                     'Existing archived reports and unedited seminar content are preserved. '
-                    'Generated PDFs are attached when requested.'})
+                    'Report PDFs are generated and downloaded locally for offline use only.'})
         result = {'status': 'pending_review', 'prUrl': pull['html_url'],
                   'branch': branch, 'revision': head, 'warnings': parsed['warnings']}
         if self._head() != revision:

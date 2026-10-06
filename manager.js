@@ -80,18 +80,16 @@
   function updateActions() {
     const count = changedCount();
     const hasSelection = Boolean(selected());
-    const publishPDF = $('publish-pdf').checked && hasSelection;
-    $('change-count').textContent = count ? `${count} 场报告有待发布的变更${publishPDF ? ' · 附当前报告 PDF' : ''}` : publishPDF ? '当前报告 PDF 待发布' : '没有待发布的变更';
+    $('change-count').textContent = count ? `${count} 场报告有待发布的变更` : '没有待发布的变更';
     $('save-draft').disabled = !hasSelection || state.busy;
     $('generate-pdf').disabled = !hasSelection || !state.local || state.busy;
-    $('publish').disabled = state.busy || !state.local || (!count && !publishPDF) || !$('public-confirm').checked;
-    $('publish-pdf').disabled = !hasSelection || state.busy || !state.local;
+    $('publish').disabled = state.busy || !state.local || !count || !$('public-confirm').checked;
     $('public-confirm').disabled = state.busy;
     $('discard-draft').disabled = state.busy || !count;
     $('export-draft').disabled = state.busy || !state.ready;
     $('publish-hint').textContent = state.local
-      ? '草稿只保存在当前浏览器中；发布会公开日程与报告资料，勾选 PDF 后也会公开 PDF 文件。'
-      : '网页可编辑和导出草稿。生成 PDF、发布到网站请打开本地助手。';
+      ? '发布仅更新日程与报告资料；PDF 只在本机生成和下载，供线下发布使用。'
+      : '此管理工具仅供内部使用，请通过本机助手打开。';
     if (!count) $('draft-status').textContent = '网站内容尚未修改';
     else if (state.savedAt) $('draft-status').textContent = `草稿已保存 · ${state.savedAt.toLocaleTimeString('zh-CN', { hour12: false, hour: '2-digit', minute: '2-digit' })}`;
     else $('draft-status').textContent = '草稿正在保存…';
@@ -174,7 +172,6 @@
   }
 
   function selectEvent(id) {
-    if ($('publish-pdf').checked) $('public-confirm').checked = false;
     state.selectedId = id;
     const event = selected();
     const noSelection = !event;
@@ -516,7 +513,6 @@
       if (!reports.some(event => event.id === state.selectedId)) state.selectedId = reports[0]?.id || null;
       $('connection-text').textContent = state.local ? '本地助手已连接' : '网站草稿编辑模式';
       $('connection-indicator').className = `status-dot ${state.local ? 'connected' : 'preview'}`;
-      $('local-help').hidden = state.local;
       const warnings = Array.isArray(data.warnings) ? data.warnings : [];
       if (state.local && data.status?.xelatex === false) warnings.push('本地暂未找到 PDF 排版工具，生成 PDF 时将提示安装方式。');
       if (state.local && data.status?.github === false) warnings.push('尚未连接 GitHub，发布前请按本地助手提示完成登录。');
@@ -550,20 +546,18 @@
   }
 
   async function publish() {
-    if (state.busy || !state.local || !$('public-confirm').checked || (!changedCount() && !$('publish-pdf').checked)) return;
+    if (state.busy || !state.local || !$('public-confirm').checked || !changedCount()) return;
     try {
       const events = validateAll();
-      if ($('publish-pdf').checked && !selected()) throw new Error('请先选择需要同时发布 PDF 的报告。');
       setBusy(true);
       operation('正在核对最新网站并发布日程，请稍候…');
-      const result = await api().publish(events, $('publish-pdf').checked ? { pdfEventId: selected().id } : {});
+      const result = await api().publish(events);
       if (result.merged || result.status === 'unchanged') {
         state.events = clone(events);
         state.baseline = clone(events);
         clearTimeout(saveTimer);
         localStorage.removeItem(STORAGE_KEY);
         $('public-confirm').checked = false;
-        $('publish-pdf').checked = false;
         operation(result.status === 'unchanged' ? '已与网站核对，内容没有新的变更。' : '已发布。网站更新需要短暂时间完成。', result);
         await load({ restore: false });
       } else operation('已提交更新，等待合并后会显示在网站。草稿已保留。', result);
@@ -614,7 +608,6 @@
       notify('草稿已撤销。', 'success');
     });
     $('public-confirm').addEventListener('change', updateActions);
-    $('publish-pdf').addEventListener('change', () => { $('public-confirm').checked = false; updateActions(); });
     $('generate-pdf').addEventListener('click', generatePDF);
     $('publish').addEventListener('click', publish);
     window.addEventListener('pagehide', () => { if (state.ready) writeDraft(); });

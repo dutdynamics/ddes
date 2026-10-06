@@ -200,15 +200,22 @@ class ManagerServerTests(unittest.TestCase):
         self.assertEqual(self.store.publish_calls, [])
         self.assertEqual(self.pdf_calls, [])
 
-    def test_publish_attaches_only_the_selected_pdf(self):
+    def test_publish_has_no_pdf_generation_or_attachment(self):
         second = dict(self.event, id='event-other', speakerName='Other speaker')
         payload = {'events': [self.event, second], 'revision': '1' * 40,
-                   'confirmPublic': True, 'pdfEventId': second['id']}
+                   'confirmPublic': True}
         status, _, body = self.request('POST', '/api/publish', payload)
         self.assertEqual(status, 200)
         self.assertEqual(json.loads(body)['status'], 'merged')
-        self.assertEqual(self.pdf_calls[0]['id'], second['id'])
-        self.assertEqual(self.store.publish_calls[0][2], {second['id']: b'%PDF-1.7 local test'})
+        self.assertEqual(self.pdf_calls, [])
+        self.assertEqual(self.store.publish_calls[0][2], {})
+
+    def test_legacy_pdf_upload_requests_cannot_write(self):
+        base = {'events': [self.event], 'revision': '1' * 40, 'confirmPublic': True}
+        for change in ({'pdfEventId': self.event['id']}, {'pdfPaths': {'file': 'data'}}, {'pdf_paths': {'file': 'data'}}):
+            self.assertEqual(self.request('POST', '/api/publish', dict(base, **change))[0], 400)
+        self.assertEqual(self.store.publish_calls, [])
+        self.assertEqual(self.pdf_calls, [])
 
     def test_invalid_publish_selection_or_event_count_cannot_write(self):
         base = {'events': [self.event], 'revision': '1' * 40, 'confirmPublic': True}

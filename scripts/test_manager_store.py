@@ -3,8 +3,6 @@ from copy import deepcopy
 import base64
 from datetime import datetime
 from hashlib import sha256
-from pathlib import Path
-from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
 
@@ -214,29 +212,30 @@ class PatchingTests(unittest.TestCase):
         with self.assertRaises(ConflictError):
             apply_events(self.html, self.original, forged)
 
-    def test_pdf_link_is_idempotent(self):
-        result = apply_events(self.html, self.original, self.original, {'editable': Path('ignored.pdf')})
-        self.assertIn('href="reports/editable.pdf"', result)
-        new_events = parse_events(result, now=NOW)['events']
-        repeated = apply_events(result, new_events, new_events, {'editable': Path('ignored.pdf')})
-        self.assertEqual(repeated, result)
-        self.assertEqual(repeated.count('data-manager-pdf="true"'), 1)
+    def test_pdf_uploads_are_rejected_and_empty_legacy_argument_is_safe(self):
+        for attachment in ({'editable': 'ignored.pdf'}, {'unknown': 'ignored.pdf'},
+                           'ignored.pdf', [], {'editable': object()}):
+            with self.subTest(attachment=type(attachment).__name__):
+                with self.assertRaisesRegex(ValueError, 'offline use only'):
+                    apply_events(self.html, self.original, self.original, attachment)
+        self.assertEqual(apply_events(self.html, self.original, self.original, {}), self.html)
 
-    def test_changed_title_keeps_calendar_id_and_pdf_link_after_archiving(self):
+    def test_changed_title_keeps_calendar_id_after_archiving_without_pdf_link(self):
         original_html = page(card(), self.past)
         events = parse_events(original_html, now=NOW)['events']
         identity = events[0]['id']
         updated = deepcopy(events)
         updated[0]['title'] = 'Completely different title'
-        result = apply_events(original_html, events, updated, {identity: Path('ignored.pdf')})
+        result = apply_events(original_html, events, updated)
         reparsed = parse_events(result, now=NOW)['events']
         self.assertEqual(reparsed[0]['id'], identity)
-        self.assertIn(f'href="reports/{identity}.pdf"', result)
+        self.assertNotIn('Download seminar PDF', result)
+        self.assertNotIn('data-manager-pdf', result)
         archived, moved, warnings = archive(result, datetime.fromisoformat('2026-10-09T09:00:00+08:00'))
         self.assertEqual(len(moved), 1)
         self.assertEqual(warnings, [])
         self.assertIn(f'id="{identity}"', archived)
-        self.assertIn(f'href="reports/{identity}.pdf"', archived)
+        self.assertNotIn('Download seminar PDF', archived)
         self.assertIn(self.past, archived)
         self.assertEqual(parse_events(archived, now=NOW)['events'], [])
 
@@ -333,14 +332,30 @@ class PublishingTests(unittest.TestCase):
         self.assertIn('/pull/7', result['prUrl'])
         self.assertFalse(any(path.endswith('/merge') for path, _, _ in self.store.calls))
 
-    def test_pdf_validation_before_remote_writes(self):
-        fake = SimpleNamespace(is_file=lambda: True,
-                               stat=lambda: SimpleNamespace(st_size=9),
-                               read_bytes=lambda: b'not a PDF')
-        with patch('manager_store.Path', return_value=fake):
-            with self.assertRaisesRegex(ValueError, 'not a PDF'):
-                self.store.publish(self.events, REVISION, {'editable': 'generated.pdf'})
+    def test_pdf_upload_is_rejected_before_remote_reads_or_writes(self):
+        for attachment in ({'editable': 'generated.pdf'}, {'unknown': object()},
+                           'generated.pdf', []):
+            with self.subTest(attachment=type(attachment).__name__):
+                with patch.object(self.store, '_read') as remote_read:
+                    with self.assertRaisesRegex(ValueError, 'offline use only'):
+                        self.store.publish(self.events, REVISION, attachment)
+                    remote_read.assert_not_called()
         self.assertEqual(self.store.calls, [])
+
+    def test_empty_legacy_pdf_argument_keeps_noop_unchanged(self):
+        self.assertEqual(self.store.publish(self.events, REVISION, {})['status'], 'unchanged')
+        self.assertEqual(self.store.calls, [])
+
+    def test_adding_report_never_generates_pdf_download_link(self):
+        added = validate_event({'id': 'new-report', 'date': '2026-11-19', 'speakerName': 'Bob'}, NOW)
+        self.assertEqual(self.store.publish(self.events + [added], REVISION)['status'], 'merged')
+        tree = next(body for path, _, body in self.store.calls if path.endswith('git/trees'))
+        self.assertEqual({item['path'] for item in tree['tree']}, {'index.html'})
+        html_blob = next(body for path, _, body in self.store.calls if path.endswith('git/blobs'))
+        published = base64.b64decode(html_blob['content']).decode()
+        self.assertIn('id="new-report"', published)
+        self.assertNotIn('Download seminar PDF', published)
+        self.assertNotIn('data-manager-pdf', published)
 
     def crossing_start(self):
         first = card('starting', 'Oct 8, 2026')
@@ -368,15 +383,11 @@ class PublishingTests(unittest.TestCase):
         html_blob = next(body for path, _, body in self.store.calls if path.endswith('git/blobs'))
         self.assertIn(first, base64.b64decode(html_blob['content']).decode())
 
-    def test_started_modified_row_or_pdf_is_refused(self):
+    def test_started_modified_row_is_refused(self):
         self.crossing_start()
         self.events[0]['title'] = 'Cannot edit started'
         with self.assertRaisesRegex(ValueError, 'started'):
             self.store.publish(self.events, REVISION)
-        self.assertEqual(self.store.calls, [])
-        self.crossing_start()
-        with self.assertRaisesRegex(ValueError, 'PDF.*started'):
-            self.store.publish(self.events, REVISION, {'starting': 'unused.pdf'})
         self.assertEqual(self.store.calls, [])
 
     def test_still_future_deletion_is_refused_after_another_starts(self):

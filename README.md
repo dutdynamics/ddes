@@ -14,24 +14,27 @@ Open `index.html` in a browser.
 
 ## 日程与报告管理
 
-网站的「管理日程」打开 [管理页](https://dutdynamics.github.io/ddes/manager.html)。
-可以修改尚未开始的报告、添加报告、导入日程表或保存草稿。新报告需自行选择
+管理工具仅供内部人员通过本机助手使用，公开报告网站不显示管理入口，也不
+部署管理页面、脚本、启动文件或模板。可以修改尚未开始的报告、添加报告、
+导入日程表或保存草稿。新报告需自行选择
 日期，常规日程为周四，默认时段 09:00–09:45、Room 114、标题和摘要 TBA。
 历史报告不会进入编辑列表。个人经历支持职位选项和自定义文字；研究兴趣逐条
 填写，PDF 中以英文逗号分隔、英文句号结束。
 
-生成 PDF 或发布修改时，双击本项目的 `start-manager.cmd`，浏览器会打开
-`http://127.0.0.1:8765/manager.html`。如果从网站下载单独的启动文件，它会
-先下载 GitHub 上最新的项目到本机，再启动助手。本地助手使用本机已有的
+双击本机项目中的 `start-manager.cmd`，浏览器会打开
+`http://127.0.0.1:8765/manager.html`。启动文件由维护人员从项目中取得，
+不通过公开报告网站提供。本地助手使用本机已有的
 GitHub CLI 登录（`gh auth login`）和 XeLaTeX，无需在网页里输入令牌。
 需要 Python 3.11 或以上，也支持 Codex 自带的 Python。此电脑的
 `D:/Software/TexLive/texlive/2026/bin/windows/xelatex.exe` 会自动识别。
-网页草稿与本机草稿保存在各自浏览器地址下，可通过「导出草稿／导入」转移。
+草稿保存在本机浏览器中，可通过「导出草稿／导入」转移。
 
 点击「生成 PDF」使用 `report-template/` 中的原始 XeLaTeX 模板、校徽和二维码，
-填写报告标题、摘要、个人经历与研究兴趣。PDF 先供本机预览和下载；只有勾选
-「同时发布此报告的 PDF」并确认公开，发布时才会将该 PDF 加入网站。公开的
-个人经历和研究兴趣保存在 `seminar-profiles.json`，切勿填写不希望公开的信息。
+填写报告标题、摘要、个人经历与研究兴趣。PDF 仅供本机预览、下载和线下
+发布，不上传网站，不在报告页面显示下载链接。旧版 PDF 上传请求也会拒绝。
+个人经历和研究兴趣保存在 `seminar-profiles.json`。目前 GitHub 源仓库仍是公开的，
+提交的资料和工具源码仍可被查看；本机访问限制保护管理操作，并不将源码变为私有。
+切勿提交不希望公开的信息。网站发布需要该仓库的 GitHub 写入权限。
 
 发布会读取 GitHub 最新主分支，核对打开页面时的版本和报告内容，创建普通分支
 及拉取请求，再按仓库允许的规则合并。远端有新修改时停止发布并保留草稿；
@@ -39,12 +42,14 @@ GitHub CLI 登录（`gh auth login`）和 XeLaTeX，无需在网页里输入令�
 未提交内容。已归档报告和未编辑报告的 HTML 保留原文。网页部署通常需要
 等待 GitHub Pages 构建完成。
 
+`_config.yml` 排除内部工具和报告 PDF 文件，公开的 `/manager.html` 及
+`/reports/` 下的 PDF 路径应返回 404。
 助手仅监听 `127.0.0.1`，写入操作验证本机来源和随机请求标识。LaTeX 编译
 禁用 shell escape，并限制公式指令；个人经历和普通文字均作转义。关闭助手
 可在 PowerShell 中查找启动的 `manager_server.py` 进程后停止它。
 
 验证命令：`python -m unittest discover -s scripts -p 'test_*.py'`，以及
-`node --test scripts/test_calendar.cjs scripts/test_manager_core.cjs`。
+`node --test scripts/test_calendar.cjs scripts/test_manager_core.cjs scripts/test_manager_api.cjs`。
 
 ## Website
 

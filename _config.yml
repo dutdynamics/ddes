@@ -1,0 +1,15 @@
+# 2026-10-06 (UTC+8): publish the seminar site without the internal assistant.
+# The GitHub Pages branch build uses Jekyll and omits these local-only files.
+exclude:
+  - manager.html
+  - manager.css
+  - manager.js
+  - manager-core.js
+  - manager-api.js
+  - start-manager.cmd
+  - start-manager.ps1
+  - scripts
+  - report-template
+  - reports
+  - seminar-profiles.json
+  - README.md
