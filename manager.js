@@ -33,8 +33,8 @@
     $('message').hidden = !message;
   }
 
-  function operation(message, result) {
-    const box = $('operation-status');
+  function operation(message, result, target = 'operation-status') {
+    const box = $(target);
     box.replaceChildren();
     box.hidden = false;
     const content = document.createElement('span');
@@ -84,6 +84,7 @@
     $('save-draft').disabled = !hasSelection || state.busy;
     $('generate-pdf').disabled = !hasSelection || !state.local || state.busy;
     $('publish').disabled = state.busy || !state.local || !count || !$('public-confirm').checked;
+    $('archive-events').disabled = state.busy || !state.local || !state.ready;
     $('public-confirm').disabled = state.busy;
     $('discard-draft').disabled = state.busy || !count;
     $('export-draft').disabled = state.busy || !state.ready;
@@ -565,6 +566,37 @@
     finally { setBusy(false); }
   }
 
+  async function archiveEvents() {
+    if (state.busy || !state.local || !state.ready) return;
+    const hadDraft = changedCount() > 0;
+    if (hadDraft) writeDraft();
+    const showStatus = (message, result) => operation(message, result, 'archive-status');
+    try {
+      setBusy(true);
+      showStatus('正在检查最新网站上已结束的报告…');
+      const preview = await api().previewArchive();
+      if (!Array.isArray(preview.candidates) || typeof preview.revision !== 'string' || !preview.revision) throw new Error('检测结果不完整，请重试。');
+      const warnings = Array.isArray(preview.warnings) ? preview.warnings.filter(value => typeof value === 'string') : [];
+      if (!preview.candidates.length) {
+        showStatus(`没有需要归档的报告。${warnings.length ? ` ${warnings.join(' ')}` : ''}`);
+        return;
+      }
+      const reports = preview.candidates.map(event => `${plain(event.date)}${event.endDate && event.endDate !== event.date ? ` 至 ${plain(event.endDate)}` : ''} · ${plain(event.speaker) || '报告人待确认'}`);
+      const copy = `已检测到 ${reports.length} 场结束的报告：\n${reports.join('\n')}\n\n确认后将通过 GitHub 更新网站，保留报告全部内容，按日期从早到晚追加到对应学期 Past Events。${hadDraft ? '\n当前未发布的编辑草稿会保留。' : ''}${warnings.length ? `\n\n请核对：${warnings.join('\n')}` : ''}`;
+      if (!(await confirmAction('归档已结束的报告', copy, '确认归档'))) { showStatus('已取消归档，网站内容未修改。'); return; }
+      showStatus('正在归档并发布到网站，请稍候…');
+      const result = await api().archive(preview.revision);
+      const count = Number.isInteger(result.count) ? result.count : reports.length;
+      if (result.merged || result.status === 'unchanged') {
+        showStatus(result.status === 'unchanged' ? '已与最新网站核对，没有需要归档的报告。' : `已将 ${count} 场报告移至 Past Events，网站正在更新。`, result);
+        if (hadDraft) {
+          notify('归档检查已完成，未发布的草稿已保留。网站已有新版本时，请先导出草稿备份，再刷新核对后发布。', 'warning');
+        } else await load({ restore: false });
+      } else showStatus('归档更新已提交，等待合并后会显示在网站。编辑草稿已保留。', result);
+    } catch (error) { showStatus(`归档未完成：${error.message} 编辑草稿已保留。`); }
+    finally { setBusy(false); }
+  }
+
   function bindEvents() {
     $('new-event').addEventListener('click', newEvent);
     $('new-event-empty').addEventListener('click', newEvent);
@@ -610,6 +642,7 @@
     $('public-confirm').addEventListener('change', updateActions);
     $('generate-pdf').addEventListener('click', generatePDF);
     $('publish').addEventListener('click', publish);
+    $('archive-events').addEventListener('click', archiveEvents);
     window.addEventListener('pagehide', () => { if (state.ready) writeDraft(); });
     document.addEventListener('visibilitychange', () => { if (document.hidden && state.ready) writeDraft(); });
   }

@@ -258,6 +258,8 @@ class FakeStore(Store):
         self.calls = []
         self.protected = False
         self.race = False
+        self.open_pulls = []
+        self.last_branch = ''
 
     def _read(self):
         return self.main_revision, self.html, self.profile
@@ -267,6 +269,8 @@ class FakeStore(Store):
 
     def _api(self, endpoint, method='GET', payload=None, missing_ok=False):
         self.calls.append((endpoint, method, deepcopy(payload)))
+        if '/pulls?state=open' in endpoint:
+            return deepcopy(self.open_pulls)
         if '/git/commits/' in endpoint:
             return {'tree': {'sha': '2' * 40}}
         if endpoint.endswith('git/blobs'):
@@ -278,12 +282,21 @@ class FakeStore(Store):
                 self.main_revision = '9' * 40
             return {'sha': '5' * 40}
         if endpoint.endswith('git/refs'):
+            self.last_branch = payload['ref'].removeprefix('refs/heads/')
             return {'ref': payload['ref']}
         if endpoint.endswith('pulls'):
+            self.open_pulls.append({
+                'number': 7, 'state': 'open', 'html_url': 'https://github.com/dutdynamics/ddes/pull/7',
+                'head': {'ref': self.last_branch, 'sha': '5' * 40,
+                         'repo': {'full_name': self.repository}},
+                'base': {'ref': 'main', 'sha': self.main_revision,
+                         'repo': {'full_name': self.repository}},
+            })
             return {'number': 7, 'html_url': 'https://github.com/dutdynamics/ddes/pull/7'}
         if endpoint.endswith('pulls/7'):
             return {'head': {'sha': '5' * 40}, 'mergeable': True, 'mergeable_state': 'blocked' if self.protected else 'clean'}
         if endpoint.endswith('/merge'):
+            self.open_pulls = []
             return {'merged': True, 'sha': '6' * 40}
         raise AssertionError(endpoint)
 
@@ -399,6 +412,227 @@ class PublishingTests(unittest.TestCase):
     def test_started_unchanged_noop_remains_noop(self):
         self.crossing_start()
         self.assertEqual(self.store.publish(self.events, REVISION)['status'], 'unchanged')
+        self.assertEqual(self.store.calls, [])
+
+
+class ArchivingTests(unittest.TestCase):
+    def setUp(self):
+        self.old = card('already-past', 'Sep 24, 2026', past=True)
+        self.ended = card('ended', 'Oct 8, 2026', speaker='Jiexin Sun (PostDoc@DUT)', title='Keep the full $N$-body title')
+        self.future = card('future', 'Oct 15, 2026', speaker='Next speaker (DUT)')
+        self.profiles = {'ended': {'experiences': [{'period': '2026.09--Present'}],
+                                   'interests': ['Dynamics'], 'unknown': {'keep': True}}}
+        self.store = FakeStore(page(self.ended + self.future, self.old), deepcopy(self.profiles))
+        self.store.now = datetime.fromisoformat('2026-10-08T12:30:00+08:00')
+
+    def published_html(self):
+        blob = next(body for path, _, body in self.store.calls if path.endswith('git/blobs'))
+        return base64.b64decode(blob['content']).decode('utf-8')
+
+    def test_preview_reads_ended_reports_excluded_by_editable_snapshot(self):
+        self.assertEqual([event['id'] for event in self.store.snapshot()['events']], ['future'])
+        preview = self.store.archive_preview()
+        self.assertEqual(preview['revision'], REVISION)
+        self.assertEqual(preview['count'], 1)
+        self.assertEqual(preview['candidates'][0]['id'], 'ended')
+        self.assertEqual(preview['candidates'][0]['speaker'], 'Jiexin Sun (PostDoc@DUT)')
+        self.assertEqual(preview['candidates'][0]['endAt'], '2026-10-08T09:45:00+08:00')
+        self.assertEqual(preview['nextEndAt'], '2026-10-15T09:45:00+08:00')
+        self.assertEqual(preview['warnings'], [])
+        self.assertEqual(self.store.calls, [])
+
+    def test_archive_changes_only_html_and_appends_preserving_every_detail(self):
+        result = self.store.archive(REVISION)
+        self.assertEqual((result['status'], result['count'], result['archived']), ('merged', 1, 1))
+        self.assertEqual(result['revision'], '6' * 40)
+        self.assertTrue(result['branch'].startswith('codex/seminar-archive-'))
+        tree = next(body for path, _, body in self.store.calls if path.endswith('git/trees'))
+        self.assertEqual([entry['path'] for entry in tree['tree']], ['index.html'])
+        result_html = self.published_html()
+        self.assertIn(self.old, result_html)
+        self.assertIn(self.future, result_html)
+        moved = self.ended.replace('upcoming-seminar', 'past-seminar', 1)
+        self.assertIn(moved, result_html)
+        self.assertLess(result_html.index(self.old), result_html.index(moved))
+        self.assertEqual(self.store.profile, self.profiles)
+        self.assertNotIn('data-manager-id="ended"', result_html)
+        merge = next(body for path, _, body in self.store.calls if path.endswith('/merge'))
+        self.assertEqual(merge['sha'], '5' * 40)
+        self.assertFalse(any(body and body.get('force') for _, _, body in self.store.calls))
+
+    def test_same_batch_appends_oldest_first_after_existing_reports(self):
+        later = card('later-ended', 'Oct 8, 2026')
+        earlier = card('earlier-ended', 'Oct 1, 2026')
+        self.store.html = page(later + earlier + self.future, self.old)
+        self.assertEqual(self.store.archive(REVISION)['count'], 2)
+        html = self.published_html()
+        self.assertLess(html.index('id="already-past"'), html.index('id="earlier-ended"'))
+        self.assertLess(html.index('id="earlier-ended"'), html.index('id="later-ended"'))
+
+    def test_beijing_end_boundary_preserves_report_until_fully_ended(self):
+        for current in ('2026-10-08T08:59:59+08:00', '2026-10-08T09:00:00+08:00',
+                        '2026-10-08T01:44:59+00:00'):
+            with self.subTest(current=current):
+                self.store.now = datetime.fromisoformat(current)
+                result = self.store.archive(REVISION)
+                self.assertEqual(result['status'], 'unchanged')
+                self.assertEqual(result['count'], 0)
+                self.assertEqual(result['nextEndAt'], '2026-10-08T09:45:00+08:00')
+        self.assertEqual(self.store.calls, [])
+        self.store.now = datetime.fromisoformat('2026-10-08T01:45:00+00:00')
+        self.assertEqual(self.store.archive_preview()['count'], 1)
+
+    def test_multiday_and_unknown_time_wait_for_final_end(self):
+        ranged = card('range', 'Oct 8-9, 2026', 'Oct 8, 9am - 10am; Oct 9, 2pm - 3pm')
+        unknown = card('unknown', 'Oct 8, 2026', 'TBA')
+        invalid = card('invalid', 'not a date')
+        self.store.html = page(ranged + unknown + invalid, self.old)
+        preview = self.store.archive_preview()
+        self.assertEqual(preview['count'], 0)
+        self.assertEqual(preview['nextEndAt'], '2026-10-09T00:00:00+08:00')
+        self.assertEqual(len(preview['warnings']), 1)
+        self.store.now = datetime.fromisoformat('2026-10-09T00:00:00+08:00')
+        self.assertEqual([item['id'] for item in self.store.archive_preview()['candidates']], ['unknown'])
+        self.store.now = datetime.fromisoformat('2026-10-09T15:00:00+08:00')
+        self.assertEqual(self.store.archive_preview()['count'], 2)
+        self.assertEqual(self.store.archive_preview()['nextEndAt'], None)
+
+    def test_repeated_archive_does_not_duplicate_reports_or_write_again(self):
+        self.store.archive(REVISION)
+        self.store.html = self.published_html()
+        self.store.main_revision = '6' * 40
+        self.store.calls.clear()
+        result = self.store.archive('6' * 40)
+        self.assertEqual((result['status'], result['archived']), ('unchanged', 0))
+        self.assertEqual(self.store.calls, [])
+        self.assertEqual(self.store.html.count('id="ended"'), 1)
+
+    def test_invalid_revision_and_conflict_stop_before_writes(self):
+        for revision in (None, '', 'bad', 17):
+            with self.subTest(revision=revision), self.assertRaisesRegex(ValueError, 'Invalid source revision'):
+                self.store.archive(revision)
+        self.store.main_revision = '9' * 40
+        with self.assertRaisesRegex(ConflictError, 'archive preview'):
+            self.store.archive(REVISION)
+        self.assertEqual(self.store.calls, [])
+
+    def test_remote_changes_during_preparation_never_publish_branch(self):
+        self.store.race = True
+        with self.assertRaises(ConflictError):
+            self.store.archive(REVISION)
+        self.assertFalse(any(path.endswith('git/refs') for path, _, _ in self.store.calls))
+
+    def test_protection_keeps_archive_as_reviewable_pr(self):
+        self.store.protected = True
+        result = self.store.archive(REVISION)
+        self.assertEqual((result['status'], result['count'], result['archived']), ('pending_review', 1, 0))
+        self.assertIn('/pull/7', result['prUrl'])
+        self.assertFalse(any(path.endswith('/merge') for path, _, _ in self.store.calls))
+
+    def test_repeated_protected_archive_reuses_existing_pr_without_new_writes(self):
+        self.store.protected = True
+        first = self.store.archive(REVISION)
+        self.store.calls.clear()
+        second = self.store.archive(REVISION)
+        self.assertEqual(second['status'], 'pending_review')
+        self.assertEqual(second['archived'], 0)
+        self.assertEqual((second['prUrl'], second['branch'], second['revision']),
+                         (first['prUrl'], first['branch'], first['revision']))
+        self.assertEqual(len(self.store.open_pulls), 1)
+        self.assertTrue(all(method == 'GET' for _, method, _ in self.store.calls))
+
+    def test_merge_confirmation_error_retry_reuses_saved_archive_pr(self):
+        original_api = self.store._api
+
+        def merge_unconfirmed(endpoint, method='GET', payload=None, missing_ok=False):
+            if endpoint.endswith('/merge'):
+                raise GitHubError('GitHub merge confirmation failed.')
+            return original_api(endpoint, method, payload, missing_ok)
+
+        with patch.object(self.store, '_api', side_effect=merge_unconfirmed):
+            first = self.store.archive(REVISION)
+        self.assertEqual(first['status'], 'pending_review')
+        self.assertIn('could not be confirmed', first['message'])
+        self.store.calls.clear()
+        second = self.store.archive(REVISION)
+        self.assertEqual(second['prUrl'], first['prUrl'])
+        self.assertEqual(second['status'], 'pending_review')
+        self.assertTrue(all(method == 'GET' for _, method, _ in self.store.calls))
+
+    def test_older_open_archive_pr_blocks_additional_archive_for_new_main(self):
+        self.store.protected = True
+        first = self.store.archive(REVISION)
+        self.store.main_revision = '9' * 40
+        self.store.html = self.store.html.replace('Keep the full $N$-body title', 'Latest user title')
+        self.store.calls.clear()
+        result = self.store.archive('9' * 40)
+        self.assertEqual(result['prUrl'], first['prUrl'])
+        self.assertEqual((result['status'], result['archived']), ('pending_review', 0))
+        self.assertTrue(all(method == 'GET' for _, method, _ in self.store.calls))
+        self.assertIn('Latest user title', self.store.html)
+
+    def test_unrelated_and_fork_pull_requests_do_not_block_own_archive(self):
+        self.store.protected = True
+        self.store.archive(REVISION)
+        saved = deepcopy(self.store.open_pulls[0])
+        foreign = deepcopy(saved)
+        foreign['head']['repo']['full_name'] = 'someone/ddes'
+        unrelated = deepcopy(saved)
+        unrelated['head']['ref'] = 'codex/seminar-manager-other'
+        closed = deepcopy(saved)
+        closed['state'] = 'closed'
+        self.store.open_pulls = [foreign, unrelated, closed]
+        self.store.calls.clear()
+        self.assertEqual(self.store.archive(REVISION)['status'], 'pending_review')
+        self.assertEqual(sum(path.endswith('pulls') and method == 'POST'
+                             for path, method, _ in self.store.calls), 1)
+
+    def test_open_archive_lookup_checks_later_pages(self):
+        self.store.protected = True
+        first = self.store.archive(REVISION)
+        saved = deepcopy(self.store.open_pulls[0])
+        original_api = self.store._api
+
+        def pages(endpoint, method='GET', payload=None, missing_ok=False):
+            if '/pulls?state=open' in endpoint:
+                return [dict(state='open')] * 100 if endpoint.endswith('page=1') else [saved]
+            return original_api(endpoint, method, payload, missing_ok)
+
+        self.store.calls.clear()
+        with patch.object(self.store, '_api', side_effect=pages):
+            second = self.store.archive(REVISION)
+        self.assertEqual(second['prUrl'], first['prUrl'])
+        self.assertEqual(self.store.calls, [])
+
+    def test_archive_created_during_preparation_is_reused_before_branch(self):
+        self.store.protected = True
+        first = self.store.archive(REVISION)
+        saved = deepcopy(self.store.open_pulls[0])
+        self.store.open_pulls = []
+        original_api = self.store._api
+        lookups = []
+
+        def appeared(endpoint, method='GET', payload=None, missing_ok=False):
+            if '/pulls?state=open' in endpoint:
+                lookups.append(endpoint)
+                return [] if len(lookups) == 1 else [saved]
+            return original_api(endpoint, method, payload, missing_ok)
+
+        self.store.calls.clear()
+        with patch.object(self.store, '_api', side_effect=appeared):
+            second = self.store.archive(REVISION)
+        self.assertEqual(second['prUrl'], first['prUrl'])
+        self.assertFalse(any(path.endswith('git/refs') for path, _, _ in self.store.calls))
+        self.assertFalse(any(path.endswith('pulls') for path, _, _ in self.store.calls))
+
+    def test_unknown_date_is_preserved_and_reported_without_writes(self):
+        invalid = card('bad-date', 'Oct 40, 2026')
+        self.store.html = page(invalid + self.future, self.old)
+        result = self.store.archive(REVISION)
+        self.assertEqual(result['status'], 'unchanged')
+        self.assertEqual(len(result['warnings']), 1)
+        self.assertIn('Alice', result['warnings'][0])
+        self.assertIn(invalid, self.store.html)
         self.assertEqual(self.store.calls, [])
 
 

@@ -6,3 +6,4 @@ output/
 *.log
 *.out
 *.xdv
+.manager-state/

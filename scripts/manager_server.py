@@ -93,6 +93,17 @@ def make_handler(app):
                     with app.operation():
                         snapshot = app.store.snapshot()
                     return self.json(200, snapshot)
+                if route == '/api/archive':
+                    port = self.server.server_address[1]
+                    origins = {f'http://127.0.0.1:{port}', f'http://localhost:{port}'}
+                    # Same-origin GET usually has no Origin header. Require the
+                    # session nonce and reject an explicitly foreign origin.
+                    if (self.headers.get('Origin') not in (None, *origins) or
+                            not secrets.compare_digest(self.headers.get('X-DDES-Nonce', '').encode('utf-8'), app.nonce.encode('ascii'))):
+                        return self.json(403, {'error': '请从本地管理页检查归档。'})
+                    with app.operation():
+                        preview = app.store.archive_preview()
+                    return self.json(200, preview)
                 if route.startswith('/api/'):
                     return self.json(404, {'error': '接口不存在。'})
                 relative = route.lstrip('/') or 'manager.html'
@@ -129,6 +140,12 @@ def make_handler(app):
                 if not isinstance(data, dict):
                     raise ValueError('数据必须是对象。')
                 route = urlsplit(self.path).path
+                if route == '/api/archive':
+                    if data.get('confirmArchive') is not True:
+                        raise ValueError('归档前请确认已结束报告将移至 Past Events。')
+                    with app.operation():
+                        result = app.store.archive(data.get('revision'))
+                    return self.json(200, result)
                 if route == '/api/report':
                     event = validate_event(data.get('event'))
                     with app.operation(), tempfile.TemporaryDirectory(prefix='ddes-report-') as temp:

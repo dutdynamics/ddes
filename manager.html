@@ -30,6 +30,12 @@
     <div id="load-warning" class="notice warning" role="status" hidden></div>
     <div id="message" class="notice" role="status" aria-live="polite" hidden></div>
 
+    <section class="archive-panel panel" aria-labelledby="archive-heading">
+      <div class="archive-summary"><h2 id="archive-heading">归档已结束的报告</h2><p>检查最新网站，将已结束的报告依次追加到对应学期的 Past Events。</p><small>本机每周四 10:00 自动检测已结束的报告；时间按北京时间。</small></div>
+      <button id="archive-events" class="button button-secondary" type="button" disabled>检测并移至 Past Events</button>
+      <div id="archive-status" class="operation-status" role="status" aria-live="polite" hidden></div>
+    </section>
+
     <div class="workspace">
       <aside class="event-sidebar panel" aria-labelledby="list-heading">
         <div class="panel-heading"><div><p class="eyebrow">UPCOMING</p><h2 id="list-heading">尚未开始的报告 <span id="event-count" class="count">0</span></h2></div><button id="new-event" class="add-button" type="button" aria-label="添加报告">+</button></div>

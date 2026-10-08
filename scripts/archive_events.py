@@ -184,7 +184,9 @@ def archive(source, now):
     home, past = doc.by_id('home'), doc.by_id('past')
     groups, edits, moved, skipped = defaultdict(list), [], [], []
     for card in home.children:
-        if card.tag != 'article' or not card.has_class('seminar') or card.has_class('notice-seminar'):
+        if (card.tag != 'article' or not card.has_class('seminar') or card.has_class('notice-seminar')
+                or card.attrs.get('data-calendar-ignore') == 'true'
+                or 'badge-cancel' in source[card.start:card.end]):
             continue
         fields = doc.metadata(card)
         raw_date = card.attrs.get('data-date') or fields.get('date', '')
