@@ -206,6 +206,17 @@
     $('speaker-name').focus();
   }
 
+  function moveExperience(index, offset) {
+    const rows = selected()?.experiences;
+    const destination = index + offset;
+    if (state.busy || !Array.isArray(rows) || index < 0 || index >= rows.length || destination < 0 || destination >= rows.length) return;
+    [rows[index], rows[destination]] = [rows[destination], rows[index]];
+    renderExperiences();
+    markChanged();
+    const card = $('experience-list').children[destination];
+    (card.querySelector(`.move-experience[data-offset="${offset}"]:not(:disabled)`) || card).focus();
+  }
+
   function renderExperiences() {
     const list = $('experience-list');
     list.replaceChildren();
@@ -220,17 +231,34 @@
     rows.forEach((experience, index) => {
       const card = document.createElement('div');
       card.className = 'experience-card';
+      card.tabIndex = -1;
+      card.setAttribute('role', 'group');
+      card.setAttribute('aria-label', `第 ${index + 1} 条经历`);
       const top = document.createElement('div');
       top.className = 'experience-top';
       const label = document.createElement('span');
       label.textContent = `经历 ${String(index + 1).padStart(2, '0')}`;
+      const actions = document.createElement('div');
+      actions.className = 'experience-actions';
+      [[-1, '↑ 上移', '上移'], [1, '↓ 下移', '下移']].forEach(([offset, text, direction]) => {
+        const move = document.createElement('button');
+        move.type = 'button';
+        move.className = 'move-experience';
+        move.dataset.offset = String(offset);
+        move.textContent = text;
+        move.setAttribute('aria-label', `${direction}第 ${index + 1} 条经历`);
+        move.disabled = index + offset < 0 || index + offset >= rows.length;
+        move.addEventListener('click', () => moveExperience(index, offset));
+        actions.append(move);
+      });
       const remove = document.createElement('button');
       remove.type = 'button';
       remove.className = 'remove-experience';
       remove.textContent = '删除';
       remove.setAttribute('aria-label', `删除第 ${index + 1} 条经历`);
       remove.addEventListener('click', () => { selected().experiences.splice(index, 1); renderExperiences(); markChanged(); });
-      top.append(label, remove);
+      actions.append(remove);
+      top.append(label, actions);
       card.append(top);
       [['period', '时间', '例如 2023–present'], ['position', '职位', '选择或填写职位'], ['university', '大学 / 机构', '例如 Dalian University of Technology'], ['country', '国家', '例如 China']].forEach(([key, title, placeholder], fieldIndex) => {
         if (fieldIndex % 2 === 0) {
