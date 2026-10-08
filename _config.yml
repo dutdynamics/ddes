@@ -8,6 +8,9 @@ exclude:
   - manager-api.js
   - start-manager.cmd
   - start-manager.ps1
+  - run-archive.ps1
+  - install-archive-task.ps1
+  - .manager-state
   - scripts
   - report-template
   - reports

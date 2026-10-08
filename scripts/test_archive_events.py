@@ -35,6 +35,17 @@ class ArchiveTests(unittest.TestCase):
         self.assertIn(card().replace('upcoming-seminar', 'past-seminar'), updated)
         self.assertEqual(self.check_at(updated, '2026-09-11T09:00:00+08:00')[0], updated)
 
+    def test_cancelled_and_calendar_ignored_notices_remain_untouched(self):
+        cancelled = card(title='Cancelled').replace('keep-id', 'cancelled').replace('</h2>', '<span class="badge-cancel">Cancelled</span></h2>')
+        ignored = card(title='Ignored').replace('keep-id', 'ignored').replace('<article ', '<article data-calendar-ignore="true" ')
+        original = page(cancelled + ignored + card())
+        updated, moved, skipped = self.check_at(original, '2026-09-11T10:00:00+08:00')
+        self.assertEqual(len(moved), 1)
+        self.assertEqual(skipped, [])
+        self.assertIn(cancelled, updated)
+        self.assertIn(ignored, updated)
+        self.assertEqual(Document(updated).by_id('cancelled').parent.attrs['id'], 'home')
+
     def test_multiday_waits_for_last_day(self):
         original = page(card('May 21-22, 2026', '14:00 - 15:00'))
         self.assertEqual(self.check_at(original, '2026-05-21T16:00:00+08:00')[0], original)

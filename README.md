@@ -83,13 +83,26 @@ reachable; a holiday does not silently cancel or reschedule a report.
   organizer each Monday to submit the latest Time Plan export or screenshot.
   These follow-ups run in the Codex desktop task, not in GitHub Pages.
 
-### Friday archive check (2026-09-11)
+### 自动及手动归档（2026-10-08，北京时间）
 
-The existing Codex desktop follow-up also checks ended reports every Friday at
-09:00 Beijing time. It syncs the latest repository, runs the archive program,
-reviews the changes and publishes them through a pull request. The computer and
-Codex app must be running for this local scheduled task. If no report has ended,
-no commit is created.
+本地管理页的「检测并移至 Past Events」按钮可随时检查网站上的已结束报告，
+列出姓名与日期，确认后通过普通拉取请求更新网站。尚未结束的报告保留原位。
+正在编辑的草稿会保留；若归档改变了远端版本，请导出草稿并刷新核对后再发布。
+
+这台电脑已设置 Windows 任务 `DDES-Seminar-Archive`，每周四 **10:00 北京时间**
+在后台运行 `scripts/run_archive.py --write`。无需启动 Codex 或管理页，但电脑
+需要开机、登录 Windows，并能够连接 GitHub；使用当前用户已有的 GitHub 写入权限。
+错过启动时间后由 Windows 补跑，不显示浏览器或控制台。无报告需要归档时不提交，
+待审核的归档拉取请求会复用。不会强推或覆盖本地未提交内容。
+
+其他 Windows 电脑可在完整项目目录运行
+`powershell -NoProfile -ExecutionPolicy Bypass -File install-archive-task.ps1`
+安装相同任务；加 `-Remove` 可移除。任务路径随该电脑的项目目录设置，触发时间
+带 UTC+8 偏移。运行记录保存于本机 `.manager-state/archive-status.json` 和
+`archive-log.jsonl`，这些文件不会提交或部署到公开网站。
+
+原 Codex 定时维护保留每周一提醒和每两周假期检查，归档由本程序执行。
+运行 `python scripts/run_archive.py` 可只预览最新远端的归档候选，不提交修改。
 
 Run `python scripts/archive_events.py` to preview eligible reports, then add
 `--write` to move them from Upcoming Events into the matching Past Events

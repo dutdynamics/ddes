@@ -23,6 +23,8 @@ class FakeStore:
         self.event = event
         self.snapshot_calls = 0
         self.publish_calls = []
+        self.archive_preview_calls = 0
+        self.archive_calls = []
 
     def snapshot(self):
         self.snapshot_calls += 1
@@ -34,6 +36,18 @@ class FakeStore:
         self.publish_calls.append((deepcopy(events), revision, pdf_data))
         return {'status': 'merged', 'revision': '2' * 40,
                 'prUrl': 'https://github.com/dutdynamics/ddes/pull/123'}
+
+    def archive_preview(self):
+        self.archive_preview_calls += 1
+        return {'revision': '1' * 40, 'checkedAt': '2026-10-08T12:30:00+08:00',
+                'count': 1, 'candidates': [{'id': 'ended', 'speaker': 'Jiexin Sun',
+                                          'date': '2026-10-08', 'endAt': '2026-10-08T09:45:00+08:00'}],
+                'moved': ['Oct 8, 2026: Jiexin Sun'], 'warnings': [], 'nextEndAt': None}
+
+    def archive(self, revision):
+        self.archive_calls.append(revision)
+        return dict(self.archive_preview(), revision='2' * 40, status='merged', archived=1,
+                    prUrl='https://github.com/dutdynamics/ddes/pull/123')
 
 
 class ManagerServerTests(unittest.TestCase):
@@ -209,6 +223,50 @@ class ManagerServerTests(unittest.TestCase):
         self.assertEqual(json.loads(body)['status'], 'merged')
         self.assertEqual(self.pdf_calls, [])
         self.assertEqual(self.store.publish_calls[0][2], {})
+
+    def test_archive_preview_requires_local_host_session_nonce_and_safe_origin(self):
+        for headers in ({}, {'X-DDES-Nonce': 'wrong'},
+                        {'X-DDES-Nonce': self.app.nonce, 'Origin': 'https://evil.example'},
+                        {'X-DDES-Nonce': self.app.nonce, 'Origin': 'null'},
+                        {'X-DDES-Nonce': self.app.nonce, 'Host': 'evil.example'}):
+            self.assertEqual(self.request(path='/api/archive', headers=headers)[0], 403)
+        self.assertEqual(self.store.archive_preview_calls, 0)
+        for origin in (None, f'http://127.0.0.1:{self.port}', f'http://localhost:{self.port}'):
+            status, headers, body = self.request(path='/api/archive', headers={
+                'X-DDES-Nonce': self.app.nonce, 'Origin': origin})
+            self.assertEqual(status, 200)
+            self.assertEqual(json.loads(body)['count'], 1)
+            self.assertNotIn('Access-Control-Allow-Origin', headers)
+        self.assertEqual(self.store.archive_calls, [])
+        self.assertEqual(self.pdf_calls, [])
+
+    def test_archive_mutation_requires_confirmation_and_existing_post_guards(self):
+        for confirmation in (None, False, 'true', 1):
+            self.assertEqual(self.request('POST', '/api/archive', {
+                'revision': '1' * 40, 'confirmArchive': confirmation})[0], 400)
+        for headers in ({'Origin': None}, {'Origin': 'https://evil.example'},
+                        {'X-DDES-Nonce': None}, {'X-DDES-Nonce': 'wrong'},
+                        {'Host': 'evil.example'}):
+            self.assertEqual(self.request('POST', '/api/archive', {
+                'revision': '1' * 40, 'confirmArchive': True}, headers)[0], 403)
+        self.assertEqual(self.store.archive_calls, [])
+        status, _, body = self.request('POST', '/api/archive', {
+            'revision': '1' * 40, 'confirmArchive': True})
+        self.assertEqual(status, 200)
+        self.assertEqual(json.loads(body)['archived'], 1)
+        self.assertEqual(self.store.archive_calls, ['1' * 40])
+        self.assertEqual(self.store.publish_calls, [])
+        self.assertEqual(self.pdf_calls, [])
+
+    def test_archive_conflict_is_clear_and_operation_lock_is_released(self):
+        with patch.object(self.store, 'archive', side_effect=ValueError('The website changed since the archive preview.')):
+            status, _, body = self.request('POST', '/api/archive', {
+                'revision': '1' * 40, 'confirmArchive': True})
+        self.assertEqual(status, 400)
+        self.assertIn('archive preview', json.loads(body)['error'])
+        self.assertFalse(self.app.lock.locked())
+        self.assertEqual(self.store.archive_calls, [])
+        self.assertEqual(self.request(path='/api/archive', headers={'X-DDES-Nonce': self.app.nonce})[0], 200)
 
     def test_legacy_pdf_upload_requests_cannot_write(self):
         base = {'events': [self.event], 'revision': '1' * 40, 'confirmPublic': True}

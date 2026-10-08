@@ -18,9 +18,9 @@ import unicodedata
 from uuid import uuid4
 
 try:
-    from .archive_events import DALIAN, Document, dates, report_times
+    from .archive_events import DALIAN, Document, archive as archive_html, dates, end_of_report, report_times
 except ImportError:
-    from archive_events import DALIAN, Document, dates, report_times
+    from archive_events import DALIAN, Document, archive as archive_html, dates, end_of_report, report_times
 
 
 REPOSITORY = 'dutdynamics/ddes'
@@ -566,6 +566,64 @@ class Store:
         result['revision'] = revision
         return result
 
+    def _archive_plan(self, revision, html, instant):
+        """Read raw Upcoming cards, including reports no longer editable."""
+        edited_html, moved, warnings = archive_html(html, instant)
+        doc = Document(html)
+        home = doc.by_id('home')
+        candidates, future_ends = [], []
+        for card, identity, fields, first, last, _ in _cards(doc):
+            if card.parent is not home or not card.has_class('upcoming-seminar') or first is None:
+                continue
+            end = end_of_report(last, fields.get('time', ''))
+            if end > instant:
+                future_ends.append(end)
+                continue
+            titles = _nodes(doc, card, 'seminar-title')
+            candidates.append({
+                'id': identity, 'speaker': fields.get('speaker', 'Unknown speaker'),
+                'title': doc.text(titles[0]) if titles else 'Seminar',
+                'date': first.isoformat(), 'endDate': last.isoformat() if last != first else '',
+                'endAt': end.isoformat(),
+            })
+        if len(candidates) != len(moved):
+            raise ValueError('Archive candidates differ from the reports to move; no changes written.')
+        candidates.sort(key=lambda event: (event['date'], event['endAt'], event['id']))
+        return edited_html, {
+            'revision': revision, 'checkedAt': instant.isoformat(),
+            'count': len(moved), 'candidates': candidates, 'moved': moved,
+            'warnings': warnings,
+            'nextEndAt': min(future_ends).isoformat() if future_ends else None,
+        }
+
+    def archive_preview(self):
+        """Preview ended reports from the latest remote main without writing."""
+        revision, html, _ = self._read()
+        _, preview = self._archive_plan(revision, html, _instant(self.now))
+        return preview
+
+    def archive(self, revision):
+        """Move fully ended cards through the same protected PR publication route.
+
+        The move preserves the original HTML of every card and never rewrites
+        biographies. A revision conflict is refused before any remote write.
+        """
+        if not isinstance(revision, str) or not SHA_PATTERN.fullmatch(revision):
+            raise ValueError('Invalid source revision.')
+        latest, html, _ = self._read()
+        if latest != revision:
+            raise ConflictError('The website changed since the archive preview. Check again before archiving; your draft has been kept.')
+        instant = _instant(self.now)
+        edited_html, preview = self._archive_plan(revision, html, instant)
+        if edited_html == html:
+            return dict(preview, status='unchanged', archived=0)
+        result = self._publish_contents({'index.html': edited_html.encode('utf-8')},
+                                        revision, instant, preview['warnings'], operation='archive')
+        # Publication returns the new revision; preserve its value rather than
+        # overwriting it with the preview's source revision.
+        details = {key: value for key, value in preview.items() if key != 'revision'}
+        return dict(details, **result, archived=preview['count'] if result['status'] == 'merged' else 0)
+
     def publish(self, events, revision, pdf_paths=None):
         _reject_pdf_uploads(pdf_paths)
         if not isinstance(revision, str) or not SHA_PATTERN.fullmatch(revision):
@@ -613,6 +671,27 @@ class Store:
             contents['seminar-profiles.json'] = (json.dumps(updated_profiles, ensure_ascii=False, indent=2) + '\n').encode('utf-8')
         if not contents:
             return {'status': 'unchanged', 'revision': revision, 'warnings': parsed['warnings']}
+        return self._publish_contents(contents, revision, instant, parsed['warnings'])
+
+    def _publish_contents(self, contents, revision, instant, warnings, *, operation='update'):
+        """Publish an atomic tree through an ordinary branch and protected PR."""
+        if operation == 'archive':
+            pending = self._pending_archive(warnings)
+            if pending is not None:
+                return pending
+            message = f'Archive ended seminars ({instant.date().isoformat()}, UTC+8)'
+            title = f'Archive ended seminars — {instant.date().isoformat()}'
+            body = ('Move fully ended seminar cards from Upcoming Events to their Past Events semester. '
+                    'Append this batch in date order after existing reports. '
+                    'Report content, biographies and offline PDFs are preserved.')
+            branch_prefix = 'seminar-archive'
+        else:
+            message = f'Update seminar schedule ({instant.date().isoformat()}, UTC+8)'
+            title = f'Update seminar schedule — {instant.date().isoformat()}'
+            body = ('Update upcoming seminar details and speaker biographies from the local seminar manager. '
+                    'Existing archived reports and unedited seminar content are preserved. '
+                    'Report PDFs are generated and downloaded locally for offline use only.')
+            branch_prefix = 'seminar-manager'
         commit = self._api(self._endpoint(f'git/commits/{revision}'))
         tree_base = commit.get('tree', {}).get('sha', '')
         if not SHA_PATTERN.fullmatch(tree_base):
@@ -624,23 +703,27 @@ class Store:
             entries.append({'path': path, 'mode': '100644', 'type': 'blob', 'sha': blob['sha']})
         tree = self._api(self._endpoint('git/trees'), 'POST', {'base_tree': tree_base, 'tree': entries})
         created = self._api(self._endpoint('git/commits'), 'POST', {
-            'message': f'Update seminar schedule ({instant.date().isoformat()}, UTC+8)',
+            'message': message,
             'tree': tree['sha'], 'parents': [revision]})
         head = created['sha']
         if not SHA_PATTERN.fullmatch(head):
             raise GitHubError('GitHub returned an invalid new commit.')
         if self._head() != revision:
             raise ConflictError('The website changed while preparing your update. Refresh before publishing; no branch was published.')
-        branch = f'codex/seminar-manager-{instant.strftime("%Y%m%d")}-{uuid4().hex[:12]}'
+        if operation == 'archive':
+            # A scheduler and the local editor can inspect the same source.
+            # Recheck immediately before publishing an archive branch.
+            pending = self._pending_archive(warnings)
+            if pending is not None:
+                return pending
+        branch = f'codex/{branch_prefix}-{instant.strftime("%Y%m%d")}-{uuid4().hex[:12]}'
         self._api(self._endpoint('git/refs'), 'POST', {'ref': f'refs/heads/{branch}', 'sha': head})
         pull = self._api(self._endpoint('pulls'), 'POST', {
-            'title': f'Update seminar schedule — {instant.date().isoformat()}',
+            'title': title,
             'head': branch, 'base': 'main',
-            'body': 'Update upcoming seminar details and speaker biographies from the local seminar manager. '
-                    'Existing archived reports and unedited seminar content are preserved. '
-                    'Report PDFs are generated and downloaded locally for offline use only.'})
+            'body': body})
         result = {'status': 'pending_review', 'prUrl': pull['html_url'],
-                  'branch': branch, 'revision': head, 'warnings': parsed['warnings']}
+                  'branch': branch, 'revision': head, 'warnings': warnings}
         if self._head() != revision:
             result['message'] = 'The main branch changed. The update is available as a pull request for review.'
             return result
@@ -656,7 +739,7 @@ class Store:
         try:
             merged = self._api(self._endpoint(f'pulls/{pull["number"]}/merge'), 'PUT', {
                 'sha': head, 'merge_method': 'squash',
-                'commit_title': f'Update seminar schedule ({instant.date().isoformat()}, UTC+8)'})
+                'commit_title': message})
         except GitHubError:
             # A protected branch can reject automatic merging. Leave the PR for
             # its normal approval route rather than bypassing any protection.
@@ -668,3 +751,39 @@ class Store:
         result.update({'status': 'merged', 'revision': merged['sha'],
                        'websiteUrl': 'https://dutdynamics.github.io/ddes/'})
         return result
+
+    def _pending_archive(self, warnings):
+        """Reuse an open archive PR, including older work awaiting protection.
+
+        Only this repository's archive branches targeting its own main are
+        considered. Do not create another archive PR while review, checks or
+        merge confirmation for previous archive work is still outstanding.
+        """
+        page = 1
+        while True:
+            pulls = self._api(self._endpoint(f'pulls?state=open&base=main&per_page=100&page={page}'))
+            if not isinstance(pulls, list):
+                raise GitHubError('Open archive pull requests could not be checked safely.')
+            for pull in pulls:
+                if not isinstance(pull, dict):
+                    continue
+                head, base = pull.get('head') or {}, pull.get('base') or {}
+                head_repo = head.get('repo') or {}
+                base_repo = base.get('repo') or {}
+                branch = head.get('ref', '')
+                if (pull.get('state') != 'open' or base.get('ref') != 'main' or
+                        not isinstance(branch, str) or not branch.startswith('codex/seminar-archive-') or
+                        str(head_repo.get('full_name', '')).casefold() != self.repository.casefold() or
+                        str(base_repo.get('full_name', '')).casefold() != self.repository.casefold()):
+                    continue
+                revision, url = head.get('sha', ''), pull.get('html_url', '')
+                if (not isinstance(revision, str) or not SHA_PATTERN.fullmatch(revision) or
+                        not isinstance(url, str) or
+                        not url.casefold().startswith(f'https://github.com/{self.repository}/pull/'.casefold())):
+                    raise GitHubError('The existing archive pull request could not be read safely.')
+                return {'status': 'pending_review', 'prUrl': url, 'branch': branch,
+                        'revision': revision, 'warnings': warnings,
+                        'message': 'An archive pull request is already open. Review or merge it on GitHub before starting another archive update.'}
+            if len(pulls) < 100:
+                return None
+            page += 1
