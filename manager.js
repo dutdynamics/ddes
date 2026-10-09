@@ -175,6 +175,7 @@
   function selectEvent(id) {
     state.selectedId = id;
     const event = selected();
+    if (event) Object.assign(event, window.DDESManagerCore.normalizeEventRoles(event));
     const noSelection = !event;
     $('no-selection').hidden = !noSelection;
     $('edit-panel').hidden = noSelection || $('preview-tab').getAttribute('aria-selected') === 'true';
@@ -275,6 +276,10 @@
         input.maxLength = { period: 120, position: 180, university: 260, country: 120 }[key];
         if (key === 'position') input.setAttribute('list', 'positions');
         input.addEventListener('input', () => { experience[key] = input.value; markChanged(); });
+        if (key === 'position') input.addEventListener('change', () => {
+          const value = window.DDESManagerCore.normalizeRole(input.value);
+          if (value !== input.value) { experience[key] = input.value = value; markChanged(); }
+        });
         field.append(input);
         card.lastElementChild.append(field);
       });
@@ -517,8 +522,8 @@
           if (old && fingerprint(old) === fingerprint(saved)) continue;
           const current = eventById(saved.id);
           if (!current && !old) { state.events.push(saved); restored++; }
-          else if (current && old && fingerprint(current) === fingerprint(old) && editable(current)) {
-            state.events[state.events.indexOf(current)] = saved; restored++;
+          else if (current && old && editable(current) && (fingerprint(current) === fingerprint(old) || window.DDESManagerCore.sameExceptRoleFormatting(current, old))) {
+            state.events[state.events.indexOf(current)] = window.DDESManagerCore.normalizeEventRoles({ ...saved, sourceKey: current.sourceKey }); restored++;
           } else conflicts++;
         }
         notify(`网站已有更新。已恢复 ${restored} 场未冲突的草稿。${conflicts ? `${conflicts} 场存在差异，已保留网站最新内容；请按需重新填写。` : ''}`, conflicts ? 'warning' : 'success');
@@ -630,6 +635,11 @@
     $('new-event-empty').addEventListener('click', newEvent);
     $('event-search').addEventListener('input', renderList);
     $('event-form').addEventListener('submit', event => event.preventDefault());
+    $('speaker-affiliation').addEventListener('change', event => {
+      if (!selected() || state.busy) return;
+      const value = window.DDESManagerCore.normalizeRole(event.target.value);
+      if (value !== event.target.value) { selected().speakerAffiliation = event.target.value = value; markChanged(); }
+    });
     fields.forEach(name => $('event-form').elements.namedItem(name).addEventListener('input', event => {
       if (!selected() || state.busy) return;
       const previous = selected()[name];

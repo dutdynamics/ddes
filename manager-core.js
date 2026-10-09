@@ -4,6 +4,22 @@
   const dates = typeof module !== 'undefined' && module.exports ? require('./script.js') : window.DDESDateUtils;
   const limits = { title: 800, abstract: 20000, speakerName: 180, speakerAffiliation: 350, place: 180 };
   const experienceLimits = { period: 120, position: 180, university: 260, country: 120 };
+  function normalizeRole(value) {
+    if (typeof value !== 'string') return value;
+    return value.replace(/\bAssociate\s+Professor\b/gi, 'Associate Professor')
+      .replace(/\bPhD\s+Student\b/gi, 'PhD Student')
+      .replace(/\bPhD\b(?=\s*(?:@|[,，;；)）]|$))/g, 'PhD Student');
+  }
+  function normalizeEventRoles(event) {
+    return { ...event, speakerAffiliation: normalizeRole(event.speakerAffiliation),
+      experiences: Array.isArray(event.experiences) ? event.experiences.map(row => ({ ...row, position: normalizeRole(row.position) })) : event.experiences };
+  }
+  function sameExceptRoleFormatting(left, right) {
+    // Reconnect a draft to the latest checksum only when all report data still agrees.
+    const a = normalizeEventRoles(left), b = normalizeEventRoles(right);
+    delete a.sourceKey; delete b.sourceKey;
+    return JSON.stringify(a) === JSON.stringify(b);
+  }
   function text(value, label, limit = 500) {
     if (value == null) return '';
     if (typeof value !== 'string') throw new Error(`${label}必须是文字。`);
@@ -46,7 +62,7 @@
     event.endTime = text(input.endTime || '09:45', '结束时间', 5);
     const start = timeValue(event.startTime), end = timeValue(event.endTime);
     if (start === null || end === null || end <= start) throw new Error('请填写有效时段，每天的结束时间须晚于开始时间。');
-    for (const [key, max] of Object.entries(limits)) event[key] = text(input[key], key, max);
+    for (const [key, max] of Object.entries(limits)) event[key] = text(key === 'speakerAffiliation' ? normalizeRole(input[key]) : input[key], key, max);
     if (!event.speakerName) throw new Error('请填写报告人姓名。');
     event.title ||= 'TBA'; event.abstract ||= 'TBA'; event.place ||= 'Room 114';
     if (event.place === '114') event.place = 'Room 114';
@@ -54,7 +70,7 @@
     if (!Array.isArray(input.experiences || []) || (input.experiences || []).length > 50) throw new Error('个人经历最多 50 条。');
     event.experiences = (input.experiences || []).map(row => {
       if (!row || typeof row !== 'object' || Array.isArray(row)) throw new Error('经历格式不正确。');
-      return Object.fromEntries(Object.entries(experienceLimits).map(([key, max]) => [key, text(row[key], '个人经历', max)]));
+      return Object.fromEntries(Object.entries(experienceLimits).map(([key, max]) => [key, text(key === 'position' ? normalizeRole(row[key]) : row[key], '个人经历', max)]));
     }).filter(row => Object.values(row).some(Boolean));
     event.interests = cleanInterests(input.interests || []);
     return event;
@@ -107,11 +123,11 @@
         speakerName: match ? match[1].trim() : speaker, speakerAffiliation: match ? match[2].trim() : '',
         experiences: profile.experiences || [], interests: profile.interests || []
       };
-      if (isEditable(event, now)) events.push(event);
+      if (isEditable(event, now)) events.push(normalizeEventRoles(event));
     }
     return { events, warnings };
   }
-  const api = { validate, isEditable, cleanInterests, interestSentence, parseWebsite, validDate, timeValue };
+  const api = { validate, isEditable, cleanInterests, interestSentence, parseWebsite, validDate, timeValue, normalizeRole, normalizeEventRoles, sameExceptRoleFormatting };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else window.DDESManagerCore = api;
 })();
