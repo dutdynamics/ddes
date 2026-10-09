@@ -126,6 +126,24 @@ class ReportBuilderTests(unittest.TestCase):
             self.assertEqual(export_tex(EVENT, output), output)
             self.assertEqual(output.read_text(encoding='utf-8'), render_report(EVENT))
 
+    def test_template_font_changes_preserve_report_content(self):
+        template = Path(__file__).resolve().parents[1] / 'report-template' / 'main.tex'
+        source = template.read_text(encoding='utf-8')
+        source = source.replace(r'\fontsize{10.4}{12.4}', r'\fontsize{12.6}{15}')
+        source = source.replace(r'\fontsize{9.9}{11.8}', r'\fontsize{12.2}{14.6}')
+        source = source.replace(r'\fontsize{10.2}{12.1}', r'\fontsize{12.3}{14.8}')
+        source = source.replace('p{28mm}', 'p{31mm}')
+        with tempfile.TemporaryDirectory(dir=Path(__file__).resolve().parent) as temporary:
+            path = Path(temporary) / 'custom.tex'
+            path.write_text(source, encoding='utf-8')
+            rendered = render_report(EVENT, template_path=path)
+        for command in (r'\fontsize{12.6}{15}', r'\fontsize{12.2}{14.6}',
+                        r'\fontsize{12.3}{14.8}', 'p{31mm}'):
+            self.assertIn(command, rendered)
+        self.assertIn(r'We study $\frac{x^2}{2} + \alpha$ \& related problems.', rendered)
+        self.assertIn('PostDoc, Dalian University of Technology, China.', rendered)
+        self.assertIn('Dynamical systems, Partial differential equations.', rendered)
+
     def test_invalid_input_never_invokes_compiler(self):
         with patch('report_builder.subprocess.run') as compiler:
             with self.assertRaises(ReportError):
