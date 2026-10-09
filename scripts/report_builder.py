@@ -243,7 +243,8 @@ def _time_label(value):
 
 
 def _replace_once(pattern, replacement, source, label, flags=0):
-    source, count = re.subn(pattern, lambda match: replacement, source, count=0, flags=flags)
+    replace = replacement if callable(replacement) else lambda match: replacement
+    source, count = re.subn(pattern, replace, source, count=0, flags=flags)
     if count != 1:
         raise ReportError(f'The supplied template has an unexpected {label} section.')
     return source
@@ -285,30 +286,29 @@ def render_report(event, template_path=None):
         raise ReportError('The supplied template has an unexpected biography boundary.')
     source = source.replace(closing, '\\par\n\\vspace{6mm}', 1)
 
-    abstract = ('{\\fontsize{9.7}{11.55}\\selectfont\n'
-                '  \\textbf{Abstract.}\n  ' + escape_text(event['abstract'], paragraphs=True)
+    # Retain typography and column widths from the trusted template.
+    font_opening = r'(\{\\fontsize\{[0-9.]+\}\{[0-9.]+\}\\selectfont\n)'
+    abstract = ('  \\textbf{Abstract.}\n  ' + escape_text(event['abstract'], paragraphs=True)
                 + '\n  \\par\n}')
-    source = _replace_once(r'\{\\fontsize\{9\.7\}\{11\.55\}\\selectfont.*?\n\}',
-                           abstract, source, 'abstract', re.S)
+    source = _replace_once(font_opening + r'\s*\\textbf\{Abstract\.\}.*?\n\}',
+                           lambda match: match.group(1) + abstract, source, 'abstract', re.S)
 
-    rows = []
-    for row in event['experiences']:
-        detail = ', '.join(row[key].rstrip(' ,.;，。；') for key in
-                           ('position', 'university', 'country') if row[key]) + '.'
-        rows.append('  \\noindent\\begin{tabularx}{\\textwidth}'
-                    '{@{}>{\\bfseries}p{25mm}@{\\hspace{2mm}}>'
-                    '{\\raggedright\\arraybackslash}X@{}}\n    '
-                    + escape_text(row['period'], formulas=False) + ' & '
-                    + escape_text(detail, formulas=False)
-                    + '\n  \\end{tabularx}\\par\\vspace{0.35mm}')
-    biography = '{\\fontsize{9.2}{11}\\selectfont\n' + '\n'.join(rows) + '\n}'
-    source = _replace_once(r'\{\\fontsize\{9\.2\}\{11\}\\selectfont.*?\n\}',
+    def biography(match):
+        rows = []
+        for row in event['experiences']:
+            detail = ', '.join(row[key].rstrip(' ,.;，。；') for key in
+                               ('position', 'university', 'country') if row[key]) + '.'
+            rows.append('  \\noindent' + match.group(2) + '\n    '
+                        + escape_text(row['period'], formulas=False) + ' & '
+                        + escape_text(detail, formulas=False)
+                        + '\n  \\end{tabularx}\\par\\vspace{0.35mm}')
+        return match.group(1) + '\n'.join(rows) + '\n}'
+    source = _replace_once(font_opening + r'\s*(\\begin\{tabularx\}\{\\textwidth\}\{[^\n]+\})\n.*?\n\}',
                            biography, source, 'biography', re.S)
     keywords = ', '.join(escape_text(item) for item in event['interests']) + '.' if event['interests'] else 'TBA.'
-    interests = ('{\\fontsize{9.5}{11.3}\\selectfont\n'
-                 '  \\textbf{Research Interests:}\n  ' + keywords + '\n  \\par\n}')
-    return _replace_once(r'\{\\fontsize\{9\.5\}\{11\.3\}\\selectfont.*?\n\}',
-                         interests, source, 'research interests', re.S)
+    interests = '  \\textbf{Research Interests:}\n  ' + keywords + '\n  \\par\n}'
+    return _replace_once(font_opening + r'\s*\\textbf\{Research Interests:\}.*?\n\}',
+                         lambda match: match.group(1) + interests, source, 'research interests', re.S)
 
 
 def export_tex(event, output, template_path=None):
