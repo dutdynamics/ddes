@@ -17,6 +17,11 @@ import shutil
 import subprocess
 import tempfile
 
+try:
+    from .seminar_roles import normalize_role
+except ImportError:
+    from seminar_roles import normalize_role
+
 
 TEMPLATE_DIR = Path(__file__).resolve().parents[1] / 'report-template'
 WINDOWS_COMPILER = Path('D:/Software/TexLive/texlive/2026/bin/windows/xelatex.exe')
@@ -214,7 +219,8 @@ def validate_event(event):
               'title': 800, 'abstract': 20000}
     for field, limit in limits.items():
         default = 'Room 114' if field == 'place' else 'TBA' if field in ('title', 'abstract') else ''
-        result[field] = _string(event.get(field, default), field, limit) or default
+        value = event.get(field, default)
+        result[field] = _string(normalize_role(value) if field == 'speakerAffiliation' else value, field, limit) or default
     if not result['speakerName']:
         raise ReportError('Enter the speaker name before generating a report.')
     experiences = event.get('experiences', [])
@@ -224,7 +230,7 @@ def validate_event(event):
     for number, item in enumerate(experiences, 1):
         if not isinstance(item, dict):
             raise ReportError(f'Experience {number} must be an object.')
-        row = {key: _string(item.get(key, ''), f'Experience {number} {key}', maximum)
+        row = {key: _string(normalize_role(item.get(key, '')) if key == 'position' else item.get(key, ''), f'Experience {number} {key}', maximum)
                for key, maximum in (('period', 120), ('position', 180),
                                      ('university', 260), ('country', 120))}
         if any(row.values()):

@@ -52,7 +52,7 @@ class ParsingTests(unittest.TestCase):
         self.assertEqual(event['place'], 'Room 111-A')
         self.assertEqual(event['title'], 'A & B')
         self.assertEqual(event['speakerName'], 'Alice')
-        self.assertEqual(event['speakerAffiliation'], 'PhD@DUT')
+        self.assertEqual(event['speakerAffiliation'], 'PhD Student@DUT')
         self.assertEqual(event['abstract'], 'Keep $x^2$ and formatting.\nAnother paragraph.')
         self.assertEqual(event['sourceKey'], sha256(card().encode()).hexdigest())
         self.assertEqual(event['interests'], ['Partial differential equations', 'Dynamics'])

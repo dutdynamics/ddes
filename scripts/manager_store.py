@@ -19,8 +19,10 @@ from uuid import uuid4
 
 try:
     from .archive_events import DALIAN, Document, archive as archive_html, dates, end_of_report, report_times
+    from .seminar_roles import normalize_role
 except ImportError:
     from archive_events import DALIAN, Document, archive as archive_html, dates, end_of_report, report_times
+    from seminar_roles import normalize_role
 
 
 REPOSITORY = 'dutdynamics/ddes'
@@ -297,7 +299,8 @@ def validate_event(data, now=None, *, allow_started=False):
         ('speakerAffiliation', '', 350, False, False),
     )
     for key, default, limit, multiline, required in specs:
-        event[key] = _field(data.get(key, default), key, limit, multiline, required)
+        value = data.get(key, default)
+        event[key] = _field(normalize_role(value) if key == 'speakerAffiliation' else value, key, limit, multiline, required)
     experiences = data.get('experiences', [])
     if not isinstance(experiences, list) or len(experiences) > 50:
         raise ValueError('Experiences must be a list with at most 50 entries.')
@@ -305,7 +308,7 @@ def validate_event(data, now=None, *, allow_started=False):
     for row in experiences:
         if not isinstance(row, dict):
             raise ValueError('Each experience must be an object.')
-        normalized = {key: _field(row.get(key, ''), key, maximum)
+        normalized = {key: _field(normalize_role(row.get(key, '')) if key == 'position' else row.get(key, ''), key, maximum)
                       for key, maximum in (('period', 120), ('position', 180),
                                            ('university', 260), ('country', 120))}
         if any(normalized.values()):
