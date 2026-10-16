@@ -42,5 +42,27 @@
       "Relative equilibria of the Newtonian N-body problem",
       "Applications of Maslov index theory in the N-body problem"
     ]
+  },
+  "event-2026-10-22-tba": {
+    "experiences": [
+      {
+        "period": "2024.09- Present",
+        "position": "M.S. in Mathematics",
+        "university": "Dalian University of Technology",
+        "country": "China"
+      },
+      {
+        "period": "2020.09-2024.06",
+        "position": "B.S. in Mathematics",
+        "university": "Xinjiang University",
+        "country": "China"
+      }
+    ],
+    "interests": [
+      "Fourier Restriction",
+      "Weighted Restriction",
+      "Decoupling, Two-ends Furstenberg Inequality",
+      "Incidence Geometry"
+    ]
   }
 }
