@@ -64,5 +64,33 @@
       "Decoupling, Two-ends Furstenberg Inequality",
       "Incidence Geometry"
     ]
+  },
+  "event-2026-10-29-tba": {
+    "experiences": [
+      {
+        "period": "2025 – Present",
+        "position": "PhD Student in Mathematics",
+        "university": "Dalian University of Technology",
+        "country": "China"
+      },
+      {
+        "period": "2021 – 2025",
+        "position": "M.Sc. in Physics & M.Sc. in Mathematics",
+        "university": "University of Augsburg",
+        "country": "Germany"
+      },
+      {
+        "period": "2017 – 2023",
+        "position": "B.Sc. in Mathematics & B.Sc. in Physics",
+        "university": "University of Augsburg",
+        "country": "Germany"
+      }
+    ],
+    "interests": [
+      "Differential Geometry",
+      "(Higher) Category Theory",
+      "(Relativistic) Quantum Field Theory",
+      "General Relaticity"
+    ]
   }
 }
