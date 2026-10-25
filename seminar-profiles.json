@@ -92,5 +92,51 @@
       "(Relativistic) Quantum Field Theory",
       "General Relaticity"
     ]
+  },
+  "event-a9463333-f7aa-45c3-8207-86c38352c0bf": {
+    "experiences": [
+      {
+        "period": "2024.10-Present",
+        "position": "Assistant Professor",
+        "university": "Beijing Institute of Technology",
+        "country": "China"
+      },
+      {
+        "period": "2022.9-2024.10",
+        "position": "Postdoctoral researcher",
+        "university": "The Maxwell Institute for Mathematical Sciences",
+        "country": "Britain"
+      },
+      {
+        "period": "2018.6-2022.9",
+        "position": "PhD Student in mathematics",
+        "university": "University of Edinburgh",
+        "country": "Britain"
+      }
+    ],
+    "interests": [
+      "Intersection of Stochastic Analysis",
+      "Probability",
+      "Dispersive Partial Differential Equations"
+    ]
+  },
+  "event-e220c001-5c20-482e-827e-d924462c6f7d": {
+    "experiences": [
+      {
+        "period": "",
+        "position": "",
+        "university": "Beijing Institute of Technology",
+        "country": "China"
+      },
+      {
+        "period": "",
+        "position": "PhD Student in mathematics",
+        "university": "University of Bonn",
+        "country": "Germanny"
+      }
+    ],
+    "interests": [
+      "Deterministic and Probabilistic Theory of Nonlinear Dispersive Equations"
+    ]
   }
 }
