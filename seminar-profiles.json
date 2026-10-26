@@ -96,7 +96,7 @@
   "event-a9463333-f7aa-45c3-8207-86c38352c0bf": {
     "experiences": [
       {
-        "period": "2024.10-Present",
+        "period": "2024.11-Present",
         "position": "Assistant Professor",
         "university": "Beijing Institute of Technology",
         "country": "China"
@@ -105,13 +105,25 @@
         "period": "2022.9-2024.10",
         "position": "Postdoctoral researcher",
         "university": "The Maxwell Institute for Mathematical Sciences",
-        "country": "Britain"
+        "country": "UK"
       },
       {
         "period": "2018.6-2022.9",
         "position": "PhD Student in mathematics",
         "university": "University of Edinburgh",
-        "country": "Britain"
+        "country": "UK"
+      },
+      {
+        "period": "2017.6–2018.9",
+        "position": "M.Sc. in Mathematics",
+        "university": "University of Warwick",
+        "country": "UK"
+      },
+      {
+        "period": "2014.6–2017.9",
+        "position": "B.Sc. in Mathematics",
+        "university": "University of Sheffield",
+        "country": "UK"
       }
     ],
     "interests": [
@@ -123,20 +135,52 @@
   "event-e220c001-5c20-482e-827e-d924462c6f7d": {
     "experiences": [
       {
-        "period": "",
-        "position": "",
+        "period": "2026.10-Present",
+        "position": "Postdoctoral researcher",
         "university": "Beijing Institute of Technology",
         "country": "China"
       },
       {
-        "period": "",
+        "period": "2022.10-2026.09",
         "position": "PhD Student in mathematics",
         "university": "University of Bonn",
         "country": "Germanny"
+      },
+      {
+        "period": "2019.09-2022.06",
+        "position": "M.Sc. in Mathematics",
+        "university": "University of Chinese Academy of Sciences",
+        "country": "China"
+      },
+      {
+        "period": "2015.09-2019.06",
+        "position": "B.Sc. in Mathematics",
+        "university": "China University of Petroleum-Beijing",
+        "country": "China"
       }
     ],
     "interests": [
       "Deterministic and Probabilistic Theory of Nonlinear Dispersive Equations"
+    ]
+  },
+  "event-2026-11-05-tba": {
+    "experiences": [
+      {
+        "period": "2022.9 - Present",
+        "position": "PhD Student in Mathematics",
+        "university": "Nanjing University",
+        "country": "China"
+      },
+      {
+        "period": "2018.9 - 2022.6",
+        "position": "B.Sc. in Mathematics",
+        "university": "Nanjing University",
+        "country": "China"
+      }
+    ],
+    "interests": [
+      "Integrable Systems(KdV Equation, Nonlinear Schrödinger Equation, Toda Equation)",
+      "Operator Spectral Theory(Spectral Theory of One-Dimensional Schrödinger Operators, Dirac Operators (Self-Adjoint and Anti-Self-Adjoint), Jacobi Operators)"
     ]
   }
 }
