@@ -1953,10 +1953,11 @@ button { margin: 0; }
 .description p { margin: 0; line-height: 1.8; }
 .description strong { color: var(--navy); background: var(--yellow-pale); border-radius: 1px; }
 .badge-minicourse,
-.badge-cancel {
-  padding: 3px 8px;
+.badge-cancel,
+.badge-online {
+  padding: 4px 10px;
   border-radius: 2px;
-  font-size: .66rem;
+  font-size: .76rem;
   font-weight: 400;
   line-height: 1.35;
   letter-spacing: .01em;
@@ -1965,6 +1966,23 @@ button { margin: 0; }
 }
 .badge-minicourse { background: var(--blue); }
 .badge-cancel { background: #b63434; }
+.badge-online { background: #176b50; }
+
+.seminar-meeting {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  margin: 12px 0 18px;
+  color: var(--text);
+  font-size: .82rem;
+  line-height: 1.6;
+}
+
+.seminar-meeting .badge-online { flex: 0 0 auto; margin: 0 !important; }
+.seminar-meeting > span { white-space: nowrap; }
+.seminar-meeting a { color: var(--blue); font-weight: 600; }
+.meeting-code { font-variant-numeric: tabular-nums; }
 
 .footer-links button {
   min-height: 0;
