@@ -182,5 +182,73 @@
       "Integrable Systems(KdV Equation, Nonlinear Schrödinger Equation, Toda Equation)",
       "Operator Spectral Theory(Spectral Theory of One-Dimensional Schrödinger Operators, Dirac Operators (Self-Adjoint and Anti-Self-Adjoint), Jacobi Operators)"
     ]
+  },
+  "event-fdc033db-f474-4b79-a01e-00f646499a09": {
+    "experiences": [
+      {
+        "period": "2026 – Present",
+        "position": "Math Fellow",
+        "university": "University of California, Santa Barbara",
+        "country": "USA"
+      },
+      {
+        "period": "2025 – 2026",
+        "position": "Visiting Assistant Professor",
+        "university": "University of California, Santa Barbara",
+        "country": "USA"
+      },
+      {
+        "period": "2020 – 2025",
+        "position": "Ph.D. in Mathematics",
+        "university": "University of Illinois Chicago",
+        "country": "USA"
+      },
+      {
+        "period": "2018 – 2020",
+        "position": "M.Sc. in Mathematics",
+        "university": "New York University",
+        "country": "USA"
+      },
+      {
+        "period": "2015 – 2018",
+        "position": "B.Eng. in Electrical and Electronics Engineering",
+        "university": "Imperial College London",
+        "country": "UK"
+      }
+    ],
+    "interests": [
+      "Nonlinear Partial Differential Equations",
+      "Fluid Dynamics",
+      "Stochastic PDEs"
+    ]
+  },
+  "event-4672646b-c40d-4baa-a643-2d5264bc0579": {
+    "experiences": [
+      {
+        "period": "2026 - Present",
+        "position": "Postdoctoral researcher",
+        "university": "Dalian University of Technology",
+        "country": "China"
+      },
+      {
+        "period": "2022 – 2026",
+        "position": "PhD Student in Mathematics",
+        "university": "Central South University",
+        "country": "China"
+      },
+      {
+        "period": "2019 – 2022",
+        "position": "M.Sc. in Mathematics",
+        "university": "Northwest University",
+        "country": "China"
+      },
+      {
+        "period": "2015 – 2019",
+        "position": "B.Sc. in Mathematics",
+        "university": "Linyi University",
+        "country": "China"
+      }
+    ],
+    "interests": []
   }
 }
