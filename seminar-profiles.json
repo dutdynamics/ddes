@@ -226,7 +226,7 @@
     "experiences": [
       {
         "period": "2026 - Present",
-        "position": "Postdoctoral researcher",
+        "position": "Postdoctoral Researcher",
         "university": "Dalian University of Technology",
         "country": "China"
       },
@@ -249,7 +249,9 @@
         "country": "China"
       }
     ],
-    "interests": []
+    "interests": [
+      "Partial Differential Equations in Fluid Mechanics"
+    ]
   },
   "event-42112a48-ac72-46da-ba99-f1bcb89422ea": {
     "experiences": [
@@ -261,5 +263,30 @@
       }
     ],
     "interests": []
+  },
+  "event-9e738e57-9e13-4aef-a774-70740f687670": {
+    "experiences": [
+      {
+        "period": "2023 - Present",
+        "position": "PhD Student in Mathematics",
+        "university": "AGH University of Krakow",
+        "country": "Poland"
+      },
+      {
+        "period": "2021 - 2023",
+        "position": "M.Sc. in Mathematics",
+        "university": "AGH University of Krakow",
+        "country": "Poland"
+      },
+      {
+        "period": "2018-2021",
+        "position": "B.Sc. in Mathematics",
+        "university": "AGH University of Krakow",
+        "country": "Poland"
+      }
+    ],
+    "interests": [
+      "Topological Dynamics"
+    ]
   }
 }
