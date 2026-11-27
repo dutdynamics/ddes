@@ -288,5 +288,61 @@
     "interests": [
       "Topological Dynamics"
     ]
+  },
+  "event-ebd1131e-4db6-4b60-a032-f9ec8e782e49": {
+    "experiences": [
+      {
+        "period": "2020.09 - Present",
+        "position": "Professor",
+        "university": "Dalian University of Technology",
+        "country": "China"
+      },
+      {
+        "period": "2019.12 - 2020.08",
+        "position": "Associate Professor",
+        "university": "Dalian University of Technology",
+        "country": "China"
+      },
+      {
+        "period": "2017.11 - 2019.12",
+        "position": "Associate Professor",
+        "university": "Sun Yat-sen University",
+        "country": "China"
+      },
+      {
+        "period": "2012.09 - 2017.10",
+        "position": "Associate Professor",
+        "university": "Wenzhou University",
+        "country": "China"
+      },
+      {
+        "period": "2010.07 - 2012.08",
+        "position": "Lecturer",
+        "university": "Wenzhou University",
+        "country": "China"
+      },
+      {
+        "period": "2007.09 - 2010.06",
+        "position": "PhD Student in Mathematics",
+        "university": "Fudan University",
+        "country": "China"
+      },
+      {
+        "period": "2004.09 - 2007.06",
+        "position": "M.Sc. in Mathematics",
+        "university": "Zhejiang Normal University",
+        "country": "China"
+      },
+      {
+        "period": "2000.09 - 2004.06",
+        "position": "B.Sc. in Mathematics",
+        "university": "Zhejiang Normal University",
+        "country": "China"
+      }
+    ],
+    "interests": [
+      "Operator Theory and Operator Algebras on Analytic Function Spaces",
+      "Random Analytic Functions"
+    ]
   }
 }
