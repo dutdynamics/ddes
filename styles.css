@@ -1981,8 +1981,12 @@ button { margin: 0; }
 
 .seminar-meeting .badge-online { flex: 0 0 auto; margin: 0 !important; }
 .seminar-meeting > span { white-space: nowrap; }
-.seminar-meeting a { color: var(--blue); font-weight: 600; }
+.seminar-meeting a,
+.seminar-meeting .meeting-platform { color: var(--blue); font-weight: 600; }
+.seminar-meeting > .meeting-platform,
+.seminar-meeting > .meeting-detail { min-width: 0; overflow-wrap: anywhere; white-space: pre-wrap; }
 .meeting-code { font-variant-numeric: tabular-nums; }
+.seminar-meeting code.meeting-code { font-family: inherit; }
 
 .footer-links button {
   min-height: 0;
